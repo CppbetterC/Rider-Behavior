@@ -55,3 +55,16 @@ class ErrorPlot:
             plt.ion()
             plt.pause(5)
             plt.close()
+
+    @staticmethod
+    def loss_trend(title, x_data, y_data, path=''):
+        plt.figure(figsize=(8, 6), dpi=100)
+        plt.title(title)
+        plt.xlabel('Epoch')
+        plt.ylabel('Total Loss')
+        plt.xlim(-1, x_data)
+        plt.plot(np.array([i for i in range(x_data)]), y_data, marker='o')
+        plt.savefig(path)
+        plt.ion()
+        plt.pause(5)
+        plt.close()

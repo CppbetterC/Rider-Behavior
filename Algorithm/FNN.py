@@ -32,6 +32,9 @@ class FNN:
 
             self.__error_list = np.array([])
 
+            self.__loss = 0.0
+            self.__loss_list = np.array([])
+
     def forward(self, inputs):
         self.inputs = np.array(inputs)
 
@@ -54,10 +57,9 @@ class FNN:
         # Modified
         for i in range(self.rule_size):
             values = 1.0
-            for j in range(int(self.membership_size / self.input_size)):
+            for j in range(self.input_size):
                 values = values * self.membership2rule[i + j * self.category]
             self.rule[i] = values
-
 
         # print('rule_layer', self.rule)
 
@@ -85,6 +87,7 @@ class FNN:
         diff = (error ** 2) / 2
         # print('label:', current_output, 'diff', diff)
         self.__error_list = np.append(self.__error_list, diff)
+        self.__loss += diff
 
         copy_mean = copy.deepcopy(self.mean)
         copy_stddev = copy.deepcopy(self.stddev)
@@ -129,8 +132,8 @@ class FNN:
 
         for i in range(len(self.mean)):
             values = 1.0
-            for j in range(int(self.membership_size / self.input_size)):
-                values = values * self.membership2rule[(i + j * 6)]
+            for j in range(self.input_size):
+                values = values * self.membership2rule[(i + j * self.category) % self.membership_size]
             self.mean[i] = \
                 copy_mean[i] + (self.lr * error * self.weight[i % self.rule_size] * product[i] * values)
 
@@ -159,8 +162,9 @@ class FNN:
 
         for i in range(len(self.stddev)):
             values = 1.0
-            for j in range(int(self.membership_size / self.input_size)):
-                values = values * self.membership2rule[(i + j * 6)]
+            for j in range(self.input_size):
+                # print((i + j * self.category) % self.membership_size)
+                values = values * self.membership2rule[(i + j * self.category) % self.membership_size]
             self.stddev[i] = \
                 copy_stddev[i] + (self.lr * error * self.weight[i % self.rule_size] * product[i] * values)
 
@@ -191,9 +195,11 @@ class FNN:
     def training_model(self, epoch, train_data, train_label):
         for i in range(epoch):
             # print('epoch:', i)
+            self.__loss = 0.0
             for data, label in zip(train_data, train_label):
                 output = self.forward(data)
                 self.backward(output, label)
+            self.__loss_list = np.append(self.__loss_list, self.__loss)
 
     def testing_model(self, data):
         output_list = []
@@ -213,3 +219,7 @@ class FNN:
     @property
     def error_list(self):
         return self.__error_list
+
+    @property
+    def loss_list(self):
+        return self.__loss_list

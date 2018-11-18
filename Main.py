@@ -35,7 +35,7 @@ from MkGraph.ErrorPlot import ErrorPlot
 # Fuzzy Data Set are 1000
 """
 fnn_label_size = 6
-fnn_input_size = 5
+fnn_input_size = 3
 fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
@@ -59,8 +59,8 @@ lnn_random_size = 150
 """
 Dimension reduce algorithm
 """
-dimension_reduce_algorithm = 'Isomap'
-
+# dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap']
+dimension_reduce_algorithm = ['PCA']
 
 # # Normalization the data
 # # The interval is between -1 and 1
@@ -129,15 +129,19 @@ def reduce_dimension(data, algorithm_name):
 """
 Use the method to train FNN1 ~ FNN6
 Need to record the mean, stddev, weight, 使用的降維演算法
+para1 -> which fnn
+para2 -> which algorithm is used to reduce algorithm for fnn
 """
 
 
-def train_local_fnn(nn):
+def train_local_fnn(nn, algorithm):
+
     # Declare variables
     nn_mean, nn_stddev, nn_weight = (0.0 for _ in range(3))
     accuracy = 0.0
     matrix = np.array([])
     record_fnn = FNN()
+    loss_list = np.array([])
 
     # This variable is used to store the all accuracy
     all_nn_accuracy = np.array([])
@@ -147,7 +151,7 @@ def train_local_fnn(nn):
     org_label = np.array([1 if element == nn else 0 for element in org_label])
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, dimension_reduce_algorithm)
+    reduced_data = reduce_dimension(org_data, algorithm)
     normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
 
@@ -204,6 +208,7 @@ def train_local_fnn(nn):
             nn_weight = copy.deepcopy(fnn.weight)
             matrix = copy.deepcopy(C_matrix)
             record_fnn = copy.deepcopy(fnn)
+            loss_list = copy.deepcopy(fnn.loss_list)
 
         """
         Every error trend graph will output
@@ -222,7 +227,7 @@ def train_local_fnn(nn):
     # First Time, you need to create a folder
     if nn == 1:
         org_path = './Data/Graph/'
-        makedir(org_path, dimension_reduce_algorithm)
+        makedir(org_path, algorithm)
     # else:
     #     os.chdir('./Data/Graph/' + dimension_reduce_algorithm)
     # print('2_目錄:', os.getcwd())
@@ -232,16 +237,19 @@ def train_local_fnn(nn):
     # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     abs_path = os.getcwd() + '\\Best_FNN_' + str(nn) + '_error_trend.png'
     # print('ErrorPlot', abs_path)
-
     ErrorPlot.error_trend(
         'Best_FNN_' + str(nn) + '_error_trend', len(record_fnn.error_list), record_fnn.error_list, abs_path)
+
+    abs_path = os.getcwd() + '\\Best_FNN_' + str(nn) + '_loss_trend.png'
+    # Choose the best FNN to Plot loss on every epoch
+    ErrorPlot.loss_trend(
+        'Best_FNN_' + str(nn) + '_loss_trend', len(loss_list), loss_list, abs_path)
 
     # Choose the best Accuracy to Plot
     # rel_path = org_path + 'Accuracy vs FNN' + str(nn) + '.png'
     # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     abs_path = os.getcwd() + '\\Accuracy vs FNN' + str(nn) + '.png'
     # print('AccuracyPlot', abs_path)
-
     AccuracyPlot.build_accuracy_plot(
         'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
         all_nn_accuracy, abs_path)
@@ -272,10 +280,13 @@ def get_fnn_output(data, fnn_attribute):
 """
 Train the NN to distinguish behavior label
 Call class LabelNN to train
+
+para1 -> Those recorded attribute from the method/(train_local_fnn)
+para2 -> which algorithm is used to reduce algorithm for lnn
 """
 
 
-def train_label_nn(fnn_attribute):
+def train_label_nn(fnn_attribute, algorithm):
     # Declare variables
     nn_weight1, nn_weight2, nn_bias = (0.0 for _ in range(3))
     accuracy = 0.0
@@ -289,7 +300,7 @@ def train_label_nn(fnn_attribute):
     org_data, org_label = LoadData.get_lnn_training_data()
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, dimension_reduce_algorithm)
+    reduced_data = reduce_dimension(org_data, algorithm)
 
     normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
@@ -409,12 +420,12 @@ Test all model
 """
 
 
-def test_all_model(fnn_attribute, lnn_attribute):
+def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     # Load file, Original_data.xlsx
     org_data, org_label = LoadData.get_test_data()
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, dimension_reduce_algorithm)
+    reduced_data = reduce_dimension(org_data, algorithm)
     normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
 
@@ -450,71 +461,73 @@ def test_all_model(fnn_attribute, lnn_attribute):
 
 if __name__ == '__main__':
 
-    start = time.time()
+    for algorithm in dimension_reduce_algorithm:
 
-    # Store those values to describe the best model in fnn local training
-    fnn_mean, fnn_stddev, fnn_weight, fnn_accuracy, fnn_matrix =\
-        ([] for _ in range(5))
+        start = time.time()
 
-    """
-    Start to train FNN (Fuzzy Neural Networks)
-    We will train six FNN (FNN1 ~ FNN6)
-    para1 -> mean, 
-    para2 -> standard deviation
-    para3 -> weight, 
-    para4 -> accuracy
-    para5 -> confusion matrix
-    """
-    pd_header = ['T', 'F']
-    for nn in range(1, fnn_label_size + 1, 1):
-        p1, p2, p3, p4, p5 = train_local_fnn(nn)
-        fnn_mean.append(p1)
-        fnn_stddev.append(p2)
-        fnn_weight.append(p3)
-        fnn_accuracy.append(p4)
-        fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
+        # Store those values to describe the best model in fnn local training
+        fnn_mean, fnn_stddev, fnn_weight, fnn_accuracy, fnn_matrix =\
+            ([] for _ in range(5))
 
-    # Store and print those values
-    header = ['Mean', 'Stddev', 'Weight', 'Local Accuracy']
-    # idx = ['Fnn1', 'Fnn2', 'Fnn3', 'Fnn4', 'Fnn5', 'Fnn6']
-    fnn_statistics = \
-        {header[0]: fnn_mean, header[1]: fnn_stddev, header[2]: fnn_weight, header[3]: fnn_accuracy}
-    # print('fnn_statistics\n', fnn_statistics)
-    for key, item in fnn_statistics.items():
-        print(key, '=>', item)
+        """
+        Start to train FNN (Fuzzy Neural Networks)
+        We will train six FNN (FNN1 ~ FNN6)
+        para1 -> mean, 
+        para2 -> standard deviation
+        para3 -> weight, 
+        para4 -> accuracy
+        para5 -> confusion matrix
+        """
+        pd_header = ['T', 'F']
+        for nn in range(1, fnn_label_size + 1, 1):
+            p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
+            fnn_mean.append(p1)
+            fnn_stddev.append(p2)
+            fnn_weight.append(p3)
+            fnn_accuracy.append(p4)
+            fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
 
-    fnn_label = ['FNN1', 'FNN2', 'FNN3', 'FNN4', 'FNN5', 'FNN6']
-    for df, nn_label in zip(fnn_matrix, fnn_label):
-        print('confusion matrix', nn_label)
-        print(df)
+        # Store and print those values
+        header = ['Mean', 'Stddev', 'Weight', 'Local Accuracy']
+        # idx = ['Fnn1', 'Fnn2', 'Fnn3', 'Fnn4', 'Fnn5', 'Fnn6']
+        fnn_statistics = \
+            {header[0]: fnn_mean, header[1]: fnn_stddev, header[2]: fnn_weight, header[3]: fnn_accuracy}
+        # print('fnn_statistics\n', fnn_statistics)
+        for key, item in fnn_statistics.items():
+            print(key, '=>', item)
+
+        fnn_label = ['FNN1', 'FNN2', 'FNN3', 'FNN4', 'FNN5', 'FNN6']
+        for df, nn_label in zip(fnn_matrix, fnn_label):
+            print('confusion matrix', nn_label)
+            print(df)
+            print('<----------------------------------------------->')
+
+        """
+        After training six FNN
+        We will train the seventh neural networks
+        This neural network is used to distinguish the behavior label
+        We record the mean, stddev, weight, the method of the reduced dimension
+        We will use above those values and input the data of the LNN_Train_data.xlsx
+        """
+        lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
+        header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
+        lnn_statistics = \
+            {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
+        # print('lnn_statistics\n', lnn_statistics)
+        for key, item in lnn_statistics.items():
+            print(key, '=>', item)
+
+        # Output the Confusion Matirx
+        print('<----------------------------------------------->')
+        pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+        print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
         print('<----------------------------------------------->')
 
-    """
-    After training six FNN
-    We will train the seventh neural networks
-    This neural network is used to distinguish the behavior label
-    We record the mean, stddev, weight, the method of the reduced dimension
-    We will use above those values and input the data of the LNN_Train_data.xlsx
-    """
-    lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics)
-    header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
-    lnn_statistics = \
-        {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
-    # print('lnn_statistics\n', lnn_statistics)
-    for key, item in lnn_statistics.items():
-        print(key, '=>', item)
+        # Use the LNN_Train.xlsx to test all model
+        # All model contain FNN1 ~ FNN6 and LNN
+        model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
+        print('Model Accuracy', model_accuracy)
 
-    # Output the Confusion Matirx
-    print('<----------------------------------------------->')
-    pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-    print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
-    print('<----------------------------------------------->')
+        end = time.time()
 
-    # Use the LNN_Train.xlsx to test all model
-    # All model contain FNN1 ~ FNN6 and LNN
-    model_accuracy = test_all_model(fnn_statistics, lnn_statistics)
-    print('Model Accuracy', model_accuracy)
-
-    end = time.time()
-
-    print('All cost time is (' + str(end-start) + ')')
+        print('All cost time is (' + str(end-start) + ')')

@@ -10,17 +10,17 @@ from openpyxl import load_workbook
 class Export:
 
     @staticmethod
-    def export_split_data(data):
-        path_name = '../Data/splited_data/163.txt'
+    def export_split_data(data, file):
+        path_name = '../Data/LabelingData(Smooth)/' + file + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
-        f = open(path_name, 'w', encoding='utf-8')
-        for e in data:
-            f.write(e.date + ';' + e.time + ';' + str(e.acc_x) + ';' + str(e.acc_y) + ';' + str(e.acc_z) + ';' +
-                    str(e.gyro_x) + ';' + str(e.gyro_y) + ';' + str(e.gyro_z) + ';' +
-                    str(e.mag_x) + ';' + str(e.mag_y) + ';' + str(e.mag_z) + ';' +
-                    str(e.pre_x) + ';' + str(e.pre_y) + ';' + str(e.hall))
-            f.write("\n")
-        f.close()
+        header = ['Date', 'time', 'AccX', 'AccY', 'AccZ',
+                  'GyroX', 'GyroY', 'GyroZ', 'MagX', 'MagY', 'MagZ',
+                  'PreX', 'PreY', 'Hall']
+        df = pd.DataFrame(data, columns=header)
+        writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
+        df.to_excel(writer, sheet_name='STSensor', index=False)
+        writer.save()
+
 
     @staticmethod
     def export_dimension_data(data, type=0):

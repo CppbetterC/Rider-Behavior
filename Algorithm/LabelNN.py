@@ -2,12 +2,6 @@ import math
 import numpy as np
 import copy
 
-"""
-'THis is the seventh NN'
-'用來識別六個類神經的輸出'
-'結構為 6 6 6, 有 3 層'
-"""
-
 
 class LabelNN:
 
@@ -40,7 +34,6 @@ class LabelNN:
             self.bias = bias
 
             self.__error_list = np.array([])
-
             # self.weight1 = \
             #     np.array([random.uniform(-1, 1) for _ in range(self.weight1_size)]).reshape(-1, 6)
             # self.weight2 = \
