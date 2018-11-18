@@ -67,6 +67,7 @@ class FNN:
         output = np.matmul(
             self.rule, self.weight.reshape(self.rule_size, -1))
 
+        # output 應該要盡量往1或-1靠攏才是訓練不錯的
         # print('output_layer', output[0])
 
         return output[0]
