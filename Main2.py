@@ -156,7 +156,7 @@ def train_local_fnn(nn, algorithm):
 
     # Load file FNN_Train_data_' + str(num) + '.xlsx
     org_data, org_label = LoadData.get_fnn_training_data(nn)
-    org_label = np.array([1 if element == nn else 0 for element in org_label])
+    org_label = np.array([1 if element == nn else -1 for element in org_label])
 
     # Reduce dimension and generate train/test data
     reduced_data = reduce_dimension(org_data, algorithm)
@@ -234,7 +234,7 @@ def train_local_fnn(nn, algorithm):
 
     # First Time, you need to create a folder
     if nn == 1:
-        org_path = './Data/Graph/'
+        org_path = '.\\Data\\Graph\\'
         makedir(org_path, algorithm)
     # else:
     #     os.chdir('./Data/Graph/' + dimension_reduce_algorithm)
@@ -292,17 +292,19 @@ Train NN with DNN
 
 def train_local_dnn(nn):
     org_data, org_label = LoadData.get_fnn_training_data(nn)
-    org_label = np.array([1 if element == nn else 0 for element in org_label])
+    org_label = np.array([1 if element == nn else -1 for element in org_label])
 
     normalized_data = preprocessing.normalize(org_data)
     # label need to convert by OneHotEncoding
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
+    # y_test = y_test.reshape(-1, 1)
+    # y_train = y_train.reshape(-1, 1)
 
-    y_train_onehot = np_utils.to_categorical(y_train)
-    y_test_onehot = np_utils.to_categorical(y_test)
+    # y_train_onehot = np_utils.to_categorical(y_train)
+    # y_test_onehot = np_utils.to_categorical(y_test)
 
-    DNN.dnn_train(X_train, y_train_onehot, X_test, y_test_onehot)
+    DNN.dnn_train(X_train, y_train, X_test, y_test)
     print('<---DNN Train Finish--->')
     # 將之前訓練號的模型導入
 
@@ -330,13 +332,16 @@ if __name__ == '__main__':
             if 2 <= nn <= 4:
                 train_local_dnn(nn)
                 continue
+            else:
+                continue
+                # Test DNN
 
-            p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
-            fnn_mean.append(p1)
-            fnn_stddev.append(p2)
-            fnn_weight.append(p3)
-            fnn_accuracy.append(p4)
-            fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
+                p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
+                fnn_mean.append(p1)
+                fnn_stddev.append(p2)
+                fnn_weight.append(p3)
+                fnn_accuracy.append(p4)
+                fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
 
 
 # 2018/11/18

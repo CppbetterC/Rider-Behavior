@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import keras
@@ -11,6 +12,8 @@ from numpy import genfromtxt
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 
+from sklearn.metrics import confusion_matrix
+
 # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)  
 # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))  
 config = tf.ConfigProto()
@@ -23,6 +26,14 @@ class DNN:
 
     @staticmethod
     def dnn_train(x_Train, y_Train, x_Test, y_Test):
+
+        print("x_Train", x_Train.shape)
+        print("y_Train", y_Train.shape)
+
+        print("x_Test", x_Test.shape)
+        print("y_Test", y_Test.shape)
+
+
         # hidden_layer_unit = [1024, 512, 256, 128, 64, 32, 16, 16, 16, 16, 1]
 
         # Init the DNN constructor
@@ -41,11 +52,11 @@ class DNN:
         model.add(Dense(64, activation='sigmoid', kernel_initializer='normal'))
         model.add(Dense(32, activation='sigmoid', kernel_initializer='normal'))
         model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
-        # model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
-        # model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
+        model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
+        model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
 
         # Output layer 輸出的神經元為1個
-        model.add(Dense(2, activation='sigmoid', kernel_initializer='normal'))
+        model.add(Dense(1, activation='tanh'))
 
         # Compile the DNN　Structure
         model.compile(loss='mean_squared_error',
@@ -56,23 +67,24 @@ class DNN:
         model.summary()
         # print(model.summary())
 
-        print("x_Train", x_Train.shape)
-        print("y_Train", y_Train.shape)
-
-        print("x_Test", x_Test.shape)
-        print("y_Test", y_Test.shape)
-
         # input 跟output指定好
         train_history = model.fit(x=x_Train, y=y_Train, epochs=10)
         print(train_history)
 
         # 顯示訓練成果(分數)
         scores = model.evaluate(x_Test, y_Test)
-        print(scores)
+        print('scores', scores)
 
         # 預測(prediction)
-        predictions = model.predict_classes(x_Test)
-        print(predictions)
+        # predictions = model.predict(x_Test)
+        # print('hi', type(predictions), predictions.shape)
+
+        # C_matrix = confusion_matrix(y_Test, predictions.ravel())
+        # C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
+        # print(C_matrix)
+        # print(C_accuracy)
+
 
         # 模型存起來
+        print(os.getcwd())
         model.save('dense20.h5')
