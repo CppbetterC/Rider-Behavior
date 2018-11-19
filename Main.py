@@ -152,8 +152,11 @@ def train_local_fnn(nn, algorithm):
 
     # Reduce dimension and generate train/test data
     reduced_data = reduce_dimension(org_data, algorithm)
-    normalized_data = preprocessing.normalize(reduced_data)
+    # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+    normalized_data = min_max_scaler.fit_transform(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
     # print(X_train, X_train.shape)
@@ -302,7 +305,10 @@ def train_label_nn(fnn_attribute, algorithm):
     # Reduce dimension and generate train/test data
     reduced_data = reduce_dimension(org_data, algorithm)
 
-    normalized_data = preprocessing.normalize(reduced_data)
+    # normalized_data = preprocessing.normalize(reduced_data)
+    min_max_scaler = preprocessing.MinMaxScaler()
+    normalized_data = min_max_scaler.fit_transform(reduced_data)
+
     # reduced_data = normalization(reduced_data)
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
@@ -426,26 +432,38 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
 
     # Reduce dimension and generate train/test data
     reduced_data = reduce_dimension(org_data, algorithm)
-    normalized_data = preprocessing.normalize(reduced_data)
+    # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
+    min_max_scaler = preprocessing.MinMaxScaler()
+    normalized_data = min_max_scaler.fit_transform(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
     print('<---Test the Label NN Start--->')
     test_output_list = np.array([])
     for train_data, train_label in zip(X_train, y_train):
+    #     lnn_input = get_fnn_output(train_data, fnn_attribute)
+    #     # print('lnn_input(Test ALL)', lnn_input)
+    #
+    #     weight1 = lnn_attribute['Weight1']
+    #     weight2 = lnn_attribute['Weight2']
+    #     bias = lnn_attribute['Bias']
+    #
+    #     lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+    #     test_output = lnn.forward(lnn_input)
+    #     test_output_list = np.append(test_output_list, test_output)
+    #
+
+        # 直接投票法，不用LNN
         lnn_input = get_fnn_output(train_data, fnn_attribute)
-        # print('lnn_input(Test ALL)', lnn_input)
+        test_output_list = np.append(test_output_list, lnn_input)
 
-        weight1 = lnn_attribute['Weight1']
-        weight2 = lnn_attribute['Weight2']
-        bias = lnn_attribute['Bias']
-
-        lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
-        test_output = lnn.forward(lnn_input)
-        test_output_list = np.append(test_output_list, test_output)
 
     test_output_list = test_output_list.reshape(-1, 6)
+
+    print('Test_output_list', test_output_list)
+    x=input()
+
     label_pred = LabelNN.label_encode(test_output_list)
     C_matrix = confusion_matrix(y_train, label_pred)
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
@@ -502,30 +520,31 @@ if __name__ == '__main__':
             print(df)
             print('<----------------------------------------------->')
 
-        """
-        After training six FNN
-        We will train the seventh neural networks
-        This neural network is used to distinguish the behavior label
-        We record the mean, stddev, weight, the method of the reduced dimension
-        We will use above those values and input the data of the LNN_Train_data.xlsx
-        """
-        lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
-        header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
-        lnn_statistics = \
-            {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
-        # print('lnn_statistics\n', lnn_statistics)
-        for key, item in lnn_statistics.items():
-            print(key, '=>', item)
-
-        # Output the Confusion Matirx
-        print('<----------------------------------------------->')
-        pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-        print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
-        print('<----------------------------------------------->')
+        # """
+        # After training six FNN
+        # We will train the seventh neural networks
+        # This neural network is used to distinguish the behavior label
+        # We record the mean, stddev, weight, the method of the reduced dimension
+        # We will use above those values and input the data of the LNN_Train_data.xlsx
+        # """
+        # lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
+        # header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
+        # lnn_statistics = \
+        #     {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
+        # # print('lnn_statistics\n', lnn_statistics)
+        # for key, item in lnn_statistics.items():
+        #     print(key, '=>', item)
+        #
+        # # Output the Confusion Matirx
+        # print('<----------------------------------------------->')
+        # pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+        # print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
+        # print('<----------------------------------------------->')
 
         # Use the LNN_Train.xlsx to test all model
         # All model contain FNN1 ~ FNN6 and LNN
-        model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
+        # model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
+        model_accuracy = test_all_model(fnn_statistics, {}, algorithm)
         print('Model Accuracy', model_accuracy)
 
         end = time.time()

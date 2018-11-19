@@ -24,7 +24,7 @@ color_list = ['r', 'b', 'g', 'y', 'c', 'k']
 #      'NPE', 'LPP', 'SPE', 'LLTSA','CCA', 'MVU', 'LandmarkMVU', 'FastMVU', 'LLC',
 #      'ManifoldChart', 'CFA', 'GPLVM', 'Autoencoder', 'NCA', 'MCML', 'LMNN']
 
-reduced_algorithm = ['LLE']
+reduced_algorithm = ['Isomap']
 
 # Run the experiment from one dimension to five dimension
 for algorithm in reduced_algorithm:

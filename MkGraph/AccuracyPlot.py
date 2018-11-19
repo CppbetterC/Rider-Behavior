@@ -24,8 +24,12 @@ class AccuracyPlot:
                 "%s" % xy[1], xy=xy, xytext=(-5, 5), textcoords='offset points', color='red')
         if not bool(path):
             plt.savefig('./Data/Graph/'+title+'.png')
+            # plt.savefig('LSTM.png')
         else:
             plt.savefig(path)
         plt.ion()
         plt.pause(5)
         plt.close()
+
+#
+# AccuracyPlot.build_accuracy_plot('Accuracy vs LSTM', [3, 4, 5], [0.7016, 0.8394, 0.9688])

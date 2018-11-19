@@ -34,6 +34,7 @@ class LSTMClassification(nn.Module):
     def __init_hidden(self, bathch_size):
         hidden = (torch.zeros(self.n_layers, bathch_size, self.hidden_size),
                   torch.zeros(self.n_layers, bathch_size, self.hidden_size))
+
         return hidden
 
     def forward(self, inputs):
@@ -51,7 +52,7 @@ class LSTMClassification(nn.Module):
 
 
 # Variable
-dim = 3
+dim = 5
 all_accuracy = np.array([])
 
 # Read file LNN_Train_data.xlsx to train/test
