@@ -20,7 +20,6 @@ import datetime
 import numpy as np
 import pandas as pd
 
-
 from sklearn.manifold import LocallyLinearEmbedding
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
@@ -36,6 +35,7 @@ from Algorithm.DNN import DNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
 
+import keras
 from keras.utils import np_utils
 
 """
@@ -49,8 +49,8 @@ fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.0001
 fnn_threshold = 0.0
-fnn_epoch = 10
-fnn_random_size = 100
+fnn_epoch = 1
+fnn_random_size = 1
 
 
 """
@@ -284,9 +284,12 @@ def get_fnn_output(data, fnn_attribute):
         forward_output_list = np.append(forward_output_list, forward_output)
     return forward_output_list
 
+
 """
 Train NN with DNN
 """
+
+
 def train_local_dnn(nn):
     org_data, org_label = LoadData.get_fnn_training_data(nn)
     org_label = np.array([1 if element == nn else 0 for element in org_label])
@@ -295,12 +298,14 @@ def train_local_dnn(nn):
     # label need to convert by OneHotEncoding
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
+
     y_train_onehot = np_utils.to_categorical(y_train)
     y_test_onehot = np_utils.to_categorical(y_test)
 
     DNN.dnn_train(X_train, y_train_onehot, X_test, y_test_onehot)
     print('<---DNN Train Finish--->')
     # 將之前訓練號的模型導入
+
 
 if __name__ == '__main__':
 
@@ -324,6 +329,7 @@ if __name__ == '__main__':
             # We use DNN to train
             if 2 <= nn <= 4:
                 train_local_dnn(nn)
+                continue
 
             p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
             fnn_mean.append(p1)
@@ -331,7 +337,6 @@ if __name__ == '__main__':
             fnn_weight.append(p3)
             fnn_accuracy.append(p4)
             fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
-
 
 
 # 2018/11/18

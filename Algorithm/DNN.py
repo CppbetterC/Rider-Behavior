@@ -8,6 +8,16 @@ from keras.layers import SimpleRNN, LSTM ,Reshape
 from keras.utils import np_utils
 from numpy import genfromtxt
 
+import tensorflow as tf
+from keras.backend.tensorflow_backend import set_session
+
+# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)  
+# sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))  
+config = tf.ConfigProto()
+config.gpu_options.allocator_type = 'BFC' #A "Best-fit with coalescing" algorithm, simplified from a version of dlmalloc.
+config.gpu_options.per_process_gpu_memory_fraction = 0.3
+config.gpu_options.allow_growth = True
+set_session(tf.Session(config=config)) 
 
 class DNN:
 
@@ -21,7 +31,7 @@ class DNN:
         # 這個是第一層 要設定input_shape
         # units 指的是第一個 hidden layer 有幾個神經元
         # 指定 input layer 有264個神經元
-        model.add(Dense(units=1024, input_shape=(264, 1)))
+        model.add(Dense(units=1024, input_dim=264))
 
         # 下面這些看你要幾層跟各層的數字
         # 下面的是 hidden layer 的層數
@@ -31,11 +41,11 @@ class DNN:
         model.add(Dense(64, activation='sigmoid', kernel_initializer='normal'))
         model.add(Dense(32, activation='sigmoid', kernel_initializer='normal'))
         model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
-        model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
-        model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
+        # model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
+        # model.add(Dense(16, activation='sigmoid', kernel_initializer='normal'))
 
         # Output layer 輸出的神經元為1個
-        model.add(Dense(1, activation='sigmoid', kernel_initializer='normal'))
+        model.add(Dense(2, activation='sigmoid', kernel_initializer='normal'))
 
         # Compile the DNN　Structure
         model.compile(loss='mean_squared_error',
@@ -44,7 +54,13 @@ class DNN:
 
         # Show the DNN Structure
         model.summary()
-        print(model.summary())
+        # print(model.summary())
+
+        print("x_Train", x_Train.shape)
+        print("y_Train", y_Train.shape)
+
+        print("x_Test", x_Test.shape)
+        print("y_Test", y_Test.shape)
 
         # input 跟output指定好
         train_history = model.fit(x=x_Train, y=y_Train, epochs=10)
