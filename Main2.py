@@ -35,8 +35,6 @@ from Algorithm.DNN import DNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
 
-import keras
-from keras.utils import np_utils
 
 """
 # Fuzzy Neural Networks Structure
@@ -69,22 +67,6 @@ Dimension reduce algorithm
 """
 # dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap']
 dimension_reduce_algorithm = ['Isomap']
-
-# # Normalization the data
-# # The interval is between -1 and 1
-# def normalization(data):
-#     new_data = np.array([])
-#     tmp = data.T
-#     length = len(tmp[0])
-#     for array in tmp:
-#         sub_array = []
-#         max_value = max(array)
-#         min_value = min(array)
-#         for element in array:
-#             sub_array.append(2 * ((element - min_value) / (max_value - min_value)) - 1)
-#         new_data = np.append(new_data, sub_array)
-#     new_data = new_data.reshape(-1, length).T
-#     return new_data
 
 
 # Create a storage to new picture
@@ -266,31 +248,13 @@ def train_local_fnn(nn, algorithm):
 
 
 """
-Be used to output those values of the fnn
-input those values to fnn6
-"""
-
-
-def get_fnn_output(data, fnn_attribute):
-    forward_output_list = np.array([])
-    for i in range(0, 6, 1):
-        # print('<--- Print the FNN ' + str(nn) + ' Output--->')
-        mean = fnn_attribute['Mean'][i]
-        stddev = fnn_attribute['Stddev'][i]
-        weight = fnn_attribute['Weight'][i]
-        fnn = FNN(
-            fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
-        forward_output = fnn.forward(data)
-        forward_output_list = np.append(forward_output_list, forward_output)
-    return forward_output_list
-
-
-"""
 Train NN with DNN
 """
 
 
 def train_local_dnn(nn):
+    # Train the DNN
+    print('<---Train the DNN' + str(nn) + ' Start--->')
     org_data, org_label = LoadData.get_fnn_training_data(nn)
     org_label = np.array([1 if element == nn else -1 for element in org_label])
 
@@ -298,15 +262,9 @@ def train_local_dnn(nn):
     # label need to convert by OneHotEncoding
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
-    # y_test = y_test.reshape(-1, 1)
-    # y_train = y_train.reshape(-1, 1)
-
-    # y_train_onehot = np_utils.to_categorical(y_train)
-    # y_test_onehot = np_utils.to_categorical(y_test)
-
-    DNN.dnn_train(X_train, y_train, X_test, y_test)
-    print('<---DNN Train Finish--->')
-    # 將之前訓練號的模型導入
+    DNN.dnn_train(nn, X_train, y_train, X_test, y_test)
+    print('<---Train the DNN' + str(nn) + ' Successfully--->')
+    print('<----------------------------------------------->')
 
 
 if __name__ == '__main__':
@@ -332,10 +290,8 @@ if __name__ == '__main__':
             if 2 <= nn <= 4:
                 train_local_dnn(nn)
                 continue
-            else:
-                continue
-                # Test DNN
 
+            else:
                 p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
                 fnn_mean.append(p1)
                 fnn_stddev.append(p2)
@@ -343,6 +299,6 @@ if __name__ == '__main__':
                 fnn_accuracy.append(p4)
                 fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
 
-
-# 2018/11/18
-# 用最簡單的DNN去辨識 FNN, FNN3, FNN4 無法做到的事情
+        print('fnn_mean', fnn_mean)
+        print('fnn_stddev', fnn_stddev)
+        print('fnn_weight', fnn_weight)

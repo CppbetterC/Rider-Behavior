@@ -14,25 +14,25 @@ from keras.backend.tensorflow_backend import set_session
 
 from sklearn.metrics import confusion_matrix
 
-# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)  
-# sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))  
+# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
+# sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 config = tf.ConfigProto()
 config.gpu_options.allocator_type = 'BFC' #A "Best-fit with coalescing" algorithm, simplified from a version of dlmalloc.
 config.gpu_options.per_process_gpu_memory_fraction = 0.3
 config.gpu_options.allow_growth = True
-set_session(tf.Session(config=config)) 
+set_session(tf.Session(config=config))
+
 
 class DNN:
 
     @staticmethod
-    def dnn_train(x_Train, y_Train, x_Test, y_Test):
+    def dnn_train(nn, x_Train, y_Train, x_Test, y_Test):
 
         print("x_Train", x_Train.shape)
         print("y_Train", y_Train.shape)
 
         print("x_Test", x_Test.shape)
         print("y_Test", y_Test.shape)
-
 
         # hidden_layer_unit = [1024, 512, 256, 128, 64, 32, 16, 16, 16, 16, 1]
 
@@ -72,19 +72,14 @@ class DNN:
         print(train_history)
 
         # 顯示訓練成果(分數)
-        scores = model.evaluate(x_Test, y_Test)
-        print('scores', scores)
+        # scores = model.evaluate(x_Test, y_Test)
+        # print('scores', scores)
 
         # 預測(prediction)
-        # predictions = model.predict(x_Test)
+        prediction = model.predict(x_Test)
+        print('prediction', prediction)
         # print('hi', type(predictions), predictions.shape)
 
-        # C_matrix = confusion_matrix(y_Test, predictions.ravel())
-        # C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
-        # print(C_matrix)
-        # print(C_accuracy)
-
-
         # 模型存起來
-        print(os.getcwd())
-        model.save('dense20.h5')
+        # print(os.getcwd())
+        model.save('.\\Data\\Model\\DNN' + str(nn) + '_Model.h5')

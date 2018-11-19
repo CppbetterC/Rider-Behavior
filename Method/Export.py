@@ -195,5 +195,14 @@ class Export:
         df.to_excel(writer, sheet_name='Labeling_Data', index=False)
         writer.save()
 
+    @staticmethod
+    def export_fnn_model(data, path_name):
+        header = ['Mean', 'Stddev', 'Weight']
+        df = pd.DataFrame(data, columns=header)
+        writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
+        df.to_excel(writer, sheet_name='Labeling_Data', index=False)
+        writer.save()
+
+
 
 
