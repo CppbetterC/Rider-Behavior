@@ -20,6 +20,7 @@ from Algorithm.LabelNN import LabelNN
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.models import load_model
+from keras import optimizers
 
 """
 # Fuzzy Neural Networks Structure
@@ -148,17 +149,23 @@ def test_all_model(algorithm):
     org_data, org_label = LoadData.get_test_data()
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, algorithm)
-    min_max_scaler = preprocessing.MinMaxScaler()
-    normalized_data = min_max_scaler.fit_transform(reduced_data)
+
 
     # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
 
-    X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
+    X_train, X_test, y_train, y_test = train_test_split(org_data, org_label, test_size=0.3)
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+
+    X_train_new = min_max_scaler.fit_transform(X_train)
+    print('X_train_new', X_train_new.shape)
+
+    reduced_data = reduce_dimension(X_train, algorithm)
+    normalized_data = min_max_scaler.fit_transform(reduced_data)
+    print('normalized_data', normalized_data.shape)
 
     print('<---Test the Label NN Start--->')
-    test_output_list = np.array([])
 
     # 改成輸出mean, stddev, weight 來使用 fnn
     #
@@ -206,23 +213,31 @@ def test_all_model(algorithm):
             weight = fnn1_attribute['Weight']
             fnn = FNN(
                 fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
-            test_output = fnn.testing_model(X_train)
+            test_output = fnn.testing_model(normalized_data)
             output_list = np.append(output_list, test_output)
+
         elif i == 2:
             model = load_model('DNN2_Model.h5')
-            prediction = model.predict(X_train)
+            model.summary()
+            # adam = optimizers.Adam(lr=0.001)
+            # model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['mse'])
+            prediction = model.predict(X_train_new)
             predict = np.array([np.max(element) for element in prediction])
             output_list = np.append(output_list, predict)
 
         elif i == 3:
             model = load_model('DNN3_Model.h5')
-            prediction = model.predict(X_train)
+            # adam = optimizers.Adam(lr=0.001)
+            # model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['mse'])
+            prediction = model.predict(X_train_new)
             predict = np.array([np.max(element) for element in prediction])
             output_list = np.append(output_list, predict)
 
         elif i == 4:
             model = load_model('DNN4_Model.h5')
-            prediction = model.predict(X_train)
+            # adam = optimizers.Adam(lr=0.001)
+            # model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['mse'])
+            prediction = model.predict(X_train_new)
             predict = np.array([np.max(element) for element in prediction])
             output_list = np.append(output_list, predict)
 
@@ -232,7 +247,7 @@ def test_all_model(algorithm):
             weight = fnn5_attribute['Weight']
             fnn = FNN(
                 fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
-            test_output = fnn.testing_model(X_train)
+            test_output = fnn.testing_model(normalized_data)
             output_list = np.append(output_list, test_output)
 
         elif i == 6:
@@ -241,7 +256,7 @@ def test_all_model(algorithm):
             weight = fnn6_attribute['Weight']
             fnn = FNN(
                 fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
-            test_output = fnn.testing_model(X_train)
+            test_output = fnn.testing_model(normalized_data)
             output_list = np.append(output_list, test_output)
 
         else:
@@ -271,8 +286,8 @@ def test_all_model(algorithm):
 if __name__ == '__main__':
 
     algorithm = 'Isomap'
-    fnn_statistics = {}
-    lnn_statistics = {}
+    # fnn_statistics = {}
+    # lnn_statistics = {}
 
     # Use the LNN_Train.xlsx to test all model
     # All model contain FNN1 ~ FNN6 and LNN
