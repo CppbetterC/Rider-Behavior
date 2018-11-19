@@ -458,13 +458,15 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
         lnn_input = get_fnn_output(train_data, fnn_attribute)
         test_output_list = np.append(test_output_list, lnn_input)
 
-
     test_output_list = test_output_list.reshape(-1, 6)
-
-    print('Test_output_list', test_output_list)
-    x=input()
-
     label_pred = LabelNN.label_encode(test_output_list)
+    print('test_output_list', test_output_list)
+
+    # normalized_output = min_max_scaler.fit_transform(test_output_list)
+    # print('normalized_output', normalized_output)
+    # label_pred = LabelNN.label_encode(normalized_output)
+
+
     C_matrix = confusion_matrix(y_train, label_pred)
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
 
@@ -541,9 +543,14 @@ if __name__ == '__main__':
         # print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
         # print('<----------------------------------------------->')
 
+
         # Use the LNN_Train.xlsx to test all model
         # All model contain FNN1 ~ FNN6 and LNN
         # model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
+
+        """
+        看輸出最大的
+        """
         model_accuracy = test_all_model(fnn_statistics, {}, algorithm)
         print('Model Accuracy', model_accuracy)
 
