@@ -35,6 +35,8 @@ from Algorithm.DNN import DNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
 
+from keras.utils import np_utils
+
 
 """
 # Fuzzy Neural Networks Structure
@@ -142,7 +144,11 @@ def train_local_fnn(nn, algorithm):
 
     # Reduce dimension and generate train/test data
     reduced_data = reduce_dimension(org_data, algorithm)
-    normalized_data = preprocessing.normalize(reduced_data)
+    # normalized_data = preprocessing.normalize(reduced_data)
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+    normalized_data = min_max_scaler.fit_transform(org_data)
+
     # reduced_data = normalization(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
@@ -256,11 +262,36 @@ def train_local_dnn(nn):
     # Train the DNN
     print('<---Train the DNN' + str(nn) + ' Start--->')
     org_data, org_label = LoadData.get_fnn_training_data(nn)
-    org_label = np.array([1 if element == nn else -1 for element in org_label])
+    org_label = np.array([[1, 0] if element == nn else [0, 1] for element in org_label])
+    print(org_label)
 
-    normalized_data = preprocessing.normalize(org_data)
+    # normalized_data = preprocessing.normalize(org_data)
+
+    min_max_scaler = preprocessing.MinMaxScaler()
+    data_scaled = min_max_scaler.fit_transform(org_data)
+
     # label need to convert by OneHotEncoding
-    X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
+    X_train, X_test, y_train, y_test = train_test_split(data_scaled, org_label, test_size=0.3)
+    # y_train_onehot = np_utils.to_categorical(y_train)
+    # y_test_onehot = np_utils.to_categorical(y_test)
+
+    # print("x_Train", X_train.shape)
+    # print("x_Train", X_train)
+
+    # print("y_Train", y_train_onehot.shape)
+    # print("y_Train", y_train_onehot)
+
+    # print("y_Train", y_train.shape)
+    # print("y_Train", y_train)
+
+    # print("x_Test", X_test.shape)
+    # print("x_Test", X_test)
+
+    # print("y_Test", y_test_onehot.shape)
+    # print("y_Test", y_test_onehot)
+
+    # print("y_Test", y_test.shape)
+    # print("y_Test", y_test)
 
     DNN.dnn_train(nn, X_train, y_train, X_test, y_test)
     print('<---Train the DNN' + str(nn) + ' Successfully--->')
@@ -292,6 +323,7 @@ if __name__ == '__main__':
                 continue
 
             else:
+                continue
                 p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
                 fnn_mean.append(p1)
                 fnn_stddev.append(p2)
