@@ -36,7 +36,7 @@ hessian_lle will wrong
 # 'lle', 'pca', 'KernelPCA', 'FactorAnalysis', 'Isomap'
 # , 'ltsa_lle', 'sparse_pca', 'tSNE']
 
-reduced_algorithm = ['tSNE']
+reduced_algorithm = ['Isomap']
 
 # Run the experiment from one dimension to five dimension
 for algorithm in reduced_algorithm:
@@ -44,7 +44,9 @@ for algorithm in reduced_algorithm:
     org_data, org_label = LoadData.get_lnn_training_data()
 
     # Normalize the data
-    normalized_data = preprocessing.normalize(org_data)
+    # normalized_data = preprocessing.normalize(org_data)
+    min_max_scaler = preprocessing.MinMaxScaler()
+    normalized_data = min_max_scaler.fit_transform(org_data)
     # print(normalized_data)
 
     # 呼叫不同的降維法去降維, 取特徵直
@@ -90,7 +92,9 @@ for algorithm in reduced_algorithm:
         print('<---Break Loop--->')
         break
 
-    normalized_data = preprocessing.normalize(reduced_data)
+    # normalized_data = preprocessing.normalize(reduced_data)
+    min_max_scaler = preprocessing.MinMaxScaler()
+    normalized_data = min_max_scaler.fit_transform(reduced_data)
     print(normalized_data)
 
     # Split the original data

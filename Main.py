@@ -273,6 +273,10 @@ def get_fnn_output(data, fnn_attribute):
         mean = fnn_attribute['Mean'][i]
         stddev = fnn_attribute['Stddev'][i]
         weight = fnn_attribute['Weight'][i]
+        #
+        # print('Mean'+str(i), mean)
+        # print('Stddev'+str(i), stddev)
+        # print('Weight'+str(i), weight)
         fnn = FNN(
             fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
         forward_output = fnn.forward(data)
@@ -465,7 +469,6 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     # normalized_output = min_max_scaler.fit_transform(test_output_list)
     # print('normalized_output', normalized_output)
     # label_pred = LabelNN.label_encode(normalized_output)
-
 
     C_matrix = confusion_matrix(y_train, label_pred)
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)

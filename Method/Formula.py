@@ -1,52 +1,42 @@
-import statistics
+import numpy as np
 
 
 class Formula:
 
     @staticmethod
-    def cal_means(data):
-        return statistics.mean(data)
+    def means(data):
+        return np.mean(data)
 
     @staticmethod
-    def cal_energy(data):
-        # print('calculate the energy')
-        value = 0.0
-        for e in data:
-            value += (abs(e)) ** 2
-        value = value / len(data)
-        return value
+    def energy(data):
+        return np.sum(data**2)/len(data)
 
     @staticmethod
     # rms -> root mean square
-    def cal_rms(data):
-        square = []
-        for d in data:
-            square.append(d*d)
-        return (sum(square) / len(data)) ** 0.5
+    # 均方根
+    def rms(data):
+        return (np.sum(data**2)/len(data))**0.5
 
     @staticmethod
     # variance
-    def cal_variance(data):
-        return statistics.variance(data)
+    def variance(data):
+        mean = np.mean(data)
+        return np.sum((data-mean)**2)/(len(data)-1)
 
     @staticmethod
-    # Average absolute deviation
-    def cal_abd(data):
-        means = statistics.mean(data)
-        value = 0.0
-        for e in data:
-            value += abs(e - means)
-        value = value / len(data)
-        return value
+    # MAD, 平均絕對分差
+    def mad(data):
+        mean = np.mean(data)
+        return np.sum(np.abs(data-mean))/len(data)
 
     @staticmethod
-    def cal_standard_deviation(data):
-        return statistics.stdev(data)
+    def standard_deviation(data):
+        return np.std(data)
 
     @staticmethod
-    def cal_maximum(data):
-        return max(data)
+    def maximum(data):
+        return np.max(data)
 
     @staticmethod
-    def cal_minmum(data):
-        return min(data)
+    def minimum(data):
+        return np.min(data)

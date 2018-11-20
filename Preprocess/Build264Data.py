@@ -18,22 +18,11 @@ from Method.Export import Export
 label_type = 'C'
 
 load = LoadData()
-org_data, org_label = load.get_split_data(label_type, 'Split_data')
+load_data, org_label = load.get_split_data(label_type, 'Split_data')
 
 
 # Convert the original data to the data with 264 dimensions
-combine = DataCombine(org_data)
-combine_data = combine.cal_dimension()
-
-
-# # Load the data label
-# df = pd.read_excel('../Data/Labeling/' + behavior + '/' + file_name + '.xlsx', index=False)
-# pd_label = df.iloc[:, 14:15]
-# np_label = np.array(pd_label).T
-# load_label = np_label[0].tolist()
-
-# LDA Algorithm for reduce dimension
-org_data = np.asarray(combine_data)
+org_data = DataCombine.combine(load_data)
 print(org_data.shape)
 print(org_label.shape)
 
