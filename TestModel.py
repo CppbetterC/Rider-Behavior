@@ -21,6 +21,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.models import load_model
 from keras import optimizers
+from keras.models import model_from_json
 
 """
 # Fuzzy Neural Networks Structure
@@ -115,30 +116,6 @@ def reduce_dimension(data, algorithm_name):
 
     return data_new
 
-
-# def get_fnn_output(data, m):
-#     forward_output_list = np.array([])
-#     for i in range(0, 6, 1):
-#         # If nn == 2, 3, 4
-#         # Used the DNN Model
-#         if 1 <= i <= 3:
-#             # load dnn model
-#             # 'DNN' + str(nn) + '_Model.h5'
-#             model = load_model('DNN' + str(i+1) + '_Model.h5')
-#             result =
-#             forward_output_list = np.append(forward_output_list, result)
-#         else:
-#             # print('<--- Print the FNN ' + str(nn) + ' Output--->')
-#             mean = fnn_attribute['Mean'][i]
-#             stddev = fnn_attribute['Stddev'][i]
-#             weight = fnn_attribute['Weight'][i]
-#             fnn = FNN(
-#                 fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
-#             forward_output = fnn.forward(data)
-#             forward_output_list = np.append(forward_output_list, forward_output)
-#     return forward_output_list
-
-
 """
 Test all model
 """
@@ -217,10 +194,21 @@ def test_all_model(algorithm):
             output_list = np.append(output_list, test_output)
 
         elif i == 2:
-            model = load_model('DNN2_Model.h5')
-            model.summary()
+            # model = load_model('DNN2_Model.h5')
+            # model.summary()
             # adam = optimizers.Adam(lr=0.001)
             # model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['mse'])
+            # prediction = model.predict(X_train_new)
+
+            json_file = open("DNN" + str(i) + "_Model.json", 'r')
+            loaded_model_json = json_file.read()
+            json_file.close()
+            
+            loaded_model = model_from_json(loaded_model_json)  
+            loaded_model.load_weight("DNN" + str(i) + "_Model.h5")
+            print("Load Successfully")
+
+            loaded_model.summary()
             prediction = model.predict(X_train_new)
             predict = np.array([np.max(element) for element in prediction])
             output_list = np.append(output_list, predict)

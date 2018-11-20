@@ -82,5 +82,10 @@ class DNN:
         # print('hi', type(predictions), predictions.shape)
 
         # 模型存起來
-        print('hi model', os.getcwd())
-        model.save('DNN' + str(nn) + '_Model.h5')
+        # print('hi model', os.getcwd())
+        # model.save('DNN' + str(nn) + '_Model.(h5')
+        json_string = model.to_json()
+        with open("DNN" + str(nn) + '_Model.json', 'w') as json_file:
+            json_file.write(json_string)
+        model.save_weights("DNN" + str(nn) + "_Model.h5")
+        print("Save the Model", str(nn), "in the disk.")
