@@ -42,8 +42,8 @@ fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
 fnn_threshold = 0.0
-fnn_epoch = 10
-fnn_random_size = 100
+fnn_epoch = 1
+fnn_random_size = 1
 
 
 """
@@ -322,7 +322,7 @@ def train_label_nn(fnn_attribute, algorithm):
     org_data, org_label = LoadData.get_lnn_training_data()
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, algorithm)
+    reduced_data = reduce_dimension(org_data, org_label, algorithm)
 
     # normalized_data = preprocessing.normalize(reduced_data)
     min_max_scaler = preprocessing.MinMaxScaler()

@@ -48,35 +48,45 @@ class LabelNN:
         self.hidden_out = np.array([])
         output = np.array([])
 
+        print('self.inputs', self.inputs)
+        print('self.weight1', self.weight1)
+        print('self.weight2', self.weight2)
+        print('self.bias', self.bias)
+
         try:
             # input to hidden_in
             for i in range(0, self.hidden_size, 1):
                 self.hidden_in = np.append(
                     self.hidden_in, (self.inputs.dot(self.weight1[i]) + self.bias[i]))
 
+            print('self.hidden_in', self.hidden_in)
+
             # hidden_in to hidden_out
             for element in self.hidden_in:
                 values = LabelNN.tangent_sigmoid(element)
                 self.hidden_out = np.append(self.hidden_out, values)
 
+            print('self.hidden_out', self.hidden_out)
+
             for i in range(0, self.output_size, 1):
                 output = np.append(output, self.hidden_out.dot(self.weight2[i]))
 
-            # print('output_layer', output, len(output))
+            print('output_layer', output, len(output))
 
         except OverflowError:
-            print('<----------------------------------------------->')
-            print("<---Values OverFlowError(LabelNN[forward])--->")
+            # print('<----------------------------------------------->')
+            # print("<---Values OverFlowError(LabelNN[forward])--->")
             raise
 
         except TypeError:
-            print('<----------------------------------------------->')
-            print("<---TypeError(LabelNN[forward])--->")
+            # print('<----------------------------------------------->')
+            # print("<---TypeError(LabelNN[forward])--->")
             raise
 
         return output
 
     def backward(self, nn_output, label):
+        print(label)
         ideal_output = {1: [1, -1, -1, -1, -1, -1], 2: [-1, 1, -1, -1, -1, -1],
                         3: [-1, -1, 1, -1, -1, -1], 4: [-1, -1, -1, 1, -1, -1],
                         5: [-1, -1, -1, -1, 1, -1], 6: [-1, -1, -1, -1, -1, 1]}
@@ -100,7 +110,13 @@ class LabelNN:
         # Modify the weight2
         for i in range(len(self.weight2)):
             for j in range(len(self.weight2[i])):
-                self.weight2[i][j] = copy_weight2[i][j] + (self.lr * error[i] * self.hidden_out[j])
+                self.weight2[i][j] = copy_weight2[i][j] + (self.lr * error[j] * self.hidden_out[i])
+
+        for x, y in zip(copy_weight2, self.weight2):
+            print(x, '->', y)
+
+        # print('copy_weight2', )
+        # print('self.weight2', )
 
         # Modify the bias
         for i in range(self.bias_size):
@@ -111,11 +127,17 @@ class LabelNN:
                     accumulation += error[j] * (-1) * copy_weight2[j][i] * \
                                     LabelNN.sigmoid_differential(self.hidden_in[i])
                 except ZeroDivisionError:
-                    print('<----------------------------------------------->')
-                    print("<---ZeroDivisionError(LabelNN[backward])--->")
+                    # print('<----------------------------------------------->')
+                    # print("<---ZeroDivisionError(LabelNN[backward])--->")
                     raise
 
             self.bias[i] = copy_bias[i] + (-1 * self.lr * accumulation)
+
+        for x, y in zip(copy_bias, self.bias):
+            print(x, '->', y)
+
+        # print('copy_bias', copy_bias)
+        # print('self.bias', self.bias)
 
         # Modify the weight1
         for i in range(len(self.weight1)):
@@ -126,6 +148,9 @@ class LabelNN:
                                     LabelNN.sigmoid_differential(self.hidden_in[i]) * self.inputs[j]
                 self.weight1[i][j] = copy_weight1[i][j] + (-1 * self.lr * accumulation)
 
+        for x, y in zip(copy_weight1, self.weight1):
+            print(x, '->', y)
+
     def training_model(self, epoch, train_data, train_label):
         try:
             for i in range(epoch):
@@ -133,12 +158,12 @@ class LabelNN:
                 output = self.forward(train_data)
                 self.backward(output, train_label)
         except OverflowError:
-            print('<----------------------------------------------->')
-            print("<---Values OverFlowError(LabelNN[training_model])--->")
+            # print('<----------------------------------------------->')
+            # print("<---Values OverFlowError(LabelNN[training_model])--->")
             raise
         except ZeroDivisionError:
-            print('<----------------------------------------------->')
-            print("<---ZeroDivisionError(LabelNN[training_model])--->")
+            # print('<----------------------------------------------->')
+            # print("<---ZeroDivisionError(LabelNN[training_model])--->")
             raise
 
     def testing_model(self, data):
@@ -149,8 +174,8 @@ class LabelNN:
                 output_list = np.append(output_list, output)
 
         except OverflowError:
-            print('<----------------------------------------------->')
-            print("<---Values OverFlowError(LabelNN[testing_model])--->")
+            # print('<----------------------------------------------->')
+            # print("<---Values OverFlowError(LabelNN[testing_model])--->")
             raise
 
         return output_list.reshape(-1, 6)
@@ -161,8 +186,8 @@ class LabelNN:
         try:
             values = (math.exp(data) - math.exp(-data)) / (math.exp(data) + math.exp(-data))
         except OverflowError:
-            print('<----------------------------------------------->')
-            print("<---Values OverFlowError(LabelNN[tangent_sigmoid])--->")
+            # print('<----------------------------------------------->')
+            # print("<---Values OverFlowError(LabelNN[tangent_sigmoid])--->")
             raise
         return values
 
@@ -171,12 +196,12 @@ class LabelNN:
         try:
             values = 4 / ((math.exp(data) + math.exp(data)) ** 2)
         except OverflowError:
-            print('<----------------------------------------------->')
-            print("<---Values OverFlowError(LabelNN[sigmoid_differential])--->")
+            # print('<----------------------------------------------->')
+            # print("<---Values OverFlowError(LabelNN[sigmoid_differential])--->")
             raise
         except ZeroDivisionError:
-            print('<----------------------------------------------->')
-            print("<---ZeroDivisionError(LabelNN[sigmoid_differential])--->")
+            # print('<----------------------------------------------->')
+            # print("<---ZeroDivisionError(LabelNN[sigmoid_differential])--->")
             raise
         return values
 
