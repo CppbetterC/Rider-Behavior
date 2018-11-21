@@ -30,6 +30,7 @@ from Algorithm.FNN import FNN
 from Algorithm.LabelNN import LabelNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
+from MkGraph.ModelScatter import ModelScatter
 
 """
 # Fuzzy Neural Networks Structure
@@ -545,7 +546,33 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     return C_accuracy
 
 
+"""
+Show the Model, Visulation
+Descibe the model
+
+"""
+
+
+def show_model(mean, stddev, weight):
+    data = np.array([])
+    output = np.array([])
+    for i in range(-10, 10, 1):
+        for j in range(-10, 10, 1):
+            for k in range(-10, 10, 1):
+                tmp = np.append(data, np.array([i, j, k]))
+    data = data.reshape(-1, 10, 3) / 10
+    fnn = FNN(
+        fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size,
+        mean, stddev, weight, fnn_lr, 1)
+
+    for element in data:
+        output = np.append(output, fnn.forward(element))
+    ModelScatter.output_scatter_3d(data, output, fnn_threshold)
+
+
 if __name__ == '__main__':
+
+
 
     for algorithm in dimension_reduce_algorithm:
 
@@ -573,6 +600,9 @@ if __name__ == '__main__':
             fnn_weight.append(p3)
             fnn_accuracy.append(p4)
             fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
+            show_model(p1, p2, p3)
+            print('End')
+            x = input()
 
         # Store and print those values
         header = ['Mean', 'Stddev', 'Weight', 'Local Accuracy']

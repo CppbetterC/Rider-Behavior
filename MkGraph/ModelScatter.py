@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-class OutputScatter3D:
+class ModelScatter:
 
     @staticmethod
     def output_scatter_3d(input_data, output_data, threshold):
