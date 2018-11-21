@@ -25,6 +25,7 @@ from sklearn.manifold import Isomap
 from sklearn import preprocessing
 
 from Method.LoadData import LoadData
+from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 from Algorithm.FNN import FNN
 from Algorithm.LabelNN import LabelNN
 from MkGraph.AccuracyPlot import AccuracyPlot
@@ -39,7 +40,7 @@ fnn_input_size = 3
 fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
-fnn_lr = 0.0001
+fnn_lr = 0.001
 fnn_threshold = 0.0
 fnn_epoch = 10
 fnn_random_size = 100
@@ -52,15 +53,16 @@ fnn_random_size = 100
 lnn_input_size = 6
 lnn_hidden_size = 6
 lnn_output_size = 6
-lnn_lr = 0.0001
+lnn_lr = 0.001
 lnn_epoch = 1
 lnn_random_size = 150
 
 """
 Dimension reduce algorithm
 """
-# dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap']
-dimension_reduce_algorithm = ['Isomap']
+# dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap', 'NCA, 'tSNE']
+dimension_reduce_algorithm = ['PCA']
+# , 'LFDA']
 
 # # Normalization the data
 # # The interval is between -1 and 1
@@ -101,7 +103,7 @@ def makedir(path, algorithm_name):
 
 # Using the LLE(Locally Linear Embedding)
 # To reduce the dimension
-def reduce_dimension(data, algorithm_name):
+def reduce_dimension(data, label, algorithm_name):
     dim = fnn_input_size
     data_new = np.array([])
 
@@ -120,6 +122,19 @@ def reduce_dimension(data, algorithm_name):
         # Isomap
         embedding = Isomap(n_components=dim)
         data_new = embedding.fit_transform(data)
+
+    elif algorithm_name == 'NCA' or 'nca':
+        data_new = ra.nca(data, label, dim)
+
+    elif algorithm_name == 'tSNE':
+        data_new = ra.tsne(data, dim)
+
+    elif algorithm_name == 'sparse_pca':
+        data_new = ra.sparse_pca(data, dim)
+
+    elif algorithm_name == 'LFDA':
+        data_new = ra.lfda(data_new, label, dim)
+
     else:
         print('None dimension reduced')
 
@@ -151,7 +166,7 @@ def train_local_fnn(nn, algorithm):
     org_label = np.array([1 if element == nn else 0 for element in org_label])
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, algorithm)
+    reduced_data = reduce_dimension(org_data, org_label, algorithm)
     # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
 
@@ -435,7 +450,7 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     org_data, org_label = LoadData.get_test_data()
 
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, algorithm)
+    reduced_data = reduce_dimension(org_data, org_label, algorithm)
     # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
     min_max_scaler = preprocessing.MinMaxScaler()
@@ -446,21 +461,21 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     print('<---Test the Label NN Start--->')
     test_output_list = np.array([])
     for train_data, train_label in zip(X_train, y_train):
-    #     lnn_input = get_fnn_output(train_data, fnn_attribute)
-    #     # print('lnn_input(Test ALL)', lnn_input)
-    #
-    #     weight1 = lnn_attribute['Weight1']
-    #     weight2 = lnn_attribute['Weight2']
-    #     bias = lnn_attribute['Bias']
-    #
-    #     lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
-    #     test_output = lnn.forward(lnn_input)
-    #     test_output_list = np.append(test_output_list, test_output)
-    #
-
-        # 直接投票法，不用LNN
         lnn_input = get_fnn_output(train_data, fnn_attribute)
-        test_output_list = np.append(test_output_list, lnn_input)
+        # print('lnn_input(Test ALL)', lnn_input)
+
+        weight1 = lnn_attribute['Weight1']
+        weight2 = lnn_attribute['Weight2']
+        bias = lnn_attribute['Bias']
+
+        lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+        test_output = lnn.forward(lnn_input)
+        test_output_list = np.append(test_output_list, test_output)
+
+
+        # # 直接投票法，不用LNN
+        # lnn_input = get_fnn_output(train_data, fnn_attribute)
+        # test_output_list = np.append(test_output_list, lnn_input)
 
     test_output_list = test_output_list.reshape(-1, 6)
     label_pred = LabelNN.label_encode(test_output_list)
@@ -487,6 +502,7 @@ if __name__ == '__main__':
     for algorithm in dimension_reduce_algorithm:
 
         start = time.time()
+        print('<---Train', algorithm, '--->')
 
         # Store those values to describe the best model in fnn local training
         fnn_mean, fnn_stddev, fnn_weight, fnn_accuracy, fnn_matrix =\
@@ -525,36 +541,36 @@ if __name__ == '__main__':
             print(df)
             print('<----------------------------------------------->')
 
-        # """
-        # After training six FNN
-        # We will train the seventh neural networks
-        # This neural network is used to distinguish the behavior label
-        # We record the mean, stddev, weight, the method of the reduced dimension
-        # We will use above those values and input the data of the LNN_Train_data.xlsx
-        # """
-        # lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
-        # header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
-        # lnn_statistics = \
-        #     {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
-        # # print('lnn_statistics\n', lnn_statistics)
-        # for key, item in lnn_statistics.items():
-        #     print(key, '=>', item)
-        #
-        # # Output the Confusion Matirx
-        # print('<----------------------------------------------->')
-        # pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-        # print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
-        # print('<----------------------------------------------->')
+        """
+        After training six FNN
+        We will train the seventh neural networks
+        This neural network is used to distinguish the behavior label
+        We record the mean, stddev, weight, the method of the reduced dimension
+        We will use above those values and input the data of the LNN_Train_data.xlsx
+        """
+        lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
+        header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
+        lnn_statistics = \
+            {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
+        # print('lnn_statistics\n', lnn_statistics)
+        for key, item in lnn_statistics.items():
+            print(key, '=>', item)
+
+        # Output the Confusion Matirx
+        print('<----------------------------------------------->')
+        pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+        print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
+        print('<----------------------------------------------->')
 
 
         # Use the LNN_Train.xlsx to test all model
         # All model contain FNN1 ~ FNN6 and LNN
-        # model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
+        model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
 
-        """
-        看輸出最大的
-        """
-        model_accuracy = test_all_model(fnn_statistics, {}, algorithm)
+        # """
+        # 看輸出最大的
+        # """
+        # model_accuracy = test_all_model(fnn_statistics, {}, algorithm)
         print('Model Accuracy', model_accuracy)
 
         end = time.time()
