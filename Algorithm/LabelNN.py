@@ -124,7 +124,7 @@ class LabelNN:
             accumulation = 0.0
             for j in range(len(error)):
                 try:
-                    accumulation += error[j] * (-1) * copy_weight2[j][i] * \
+                    accumulation += error[j] * (-1) * copy_weight2[i][j] * \
                                     LabelNN.sigmoid_differential(self.hidden_in[i])
                 except ZeroDivisionError:
                     # print('<----------------------------------------------->')
@@ -144,7 +144,7 @@ class LabelNN:
             for j in range(len(self.weight1[i])):
                 accumulation = 0.0
                 for k in range(len(error)):
-                    accumulation += error[k] * (-1) * copy_weight2[k][i] *\
+                    accumulation += error[k] * (-1) * copy_weight2[i][k] *\
                                     LabelNN.sigmoid_differential(self.hidden_in[i]) * self.inputs[j]
                 self.weight1[i][j] = copy_weight1[i][j] + (-1 * self.lr * accumulation)
 
