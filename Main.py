@@ -42,8 +42,8 @@ fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
 fnn_threshold = 0.0
-fnn_epoch = 1
-fnn_random_size = 1
+fnn_epoch = 10
+fnn_random_size = 100
 
 
 """
@@ -170,8 +170,12 @@ def train_local_fnn(nn, algorithm):
     # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
 
-    min_max_scaler = preprocessing.MinMaxScaler()
-    normalized_data = min_max_scaler.fit_transform(reduced_data)
+    # 正規化 1
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # normalized_data = min_max_scaler.fit_transform(reduced_data)
+
+    # 正規化 2
+    normalized_data = preprocessing.scale(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
     # print(X_train, X_train.shape)
@@ -325,8 +329,11 @@ def train_label_nn(fnn_attribute, algorithm):
     reduced_data = reduce_dimension(org_data, org_label, algorithm)
 
     # normalized_data = preprocessing.normalize(reduced_data)
-    min_max_scaler = preprocessing.MinMaxScaler()
-    normalized_data = min_max_scaler.fit_transform(reduced_data)
+
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # normalized_data = min_max_scaler.fit_transform(reduced_data)
+
+    normalized_data = preprocessing.scale(reduced_data)
 
     # reduced_data = normalization(reduced_data)
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
@@ -346,6 +353,19 @@ def train_label_nn(fnn_attribute, algorithm):
         lnn_input_list = np.append(lnn_input_list, lnn_input)
         lnn_input_list = lnn_input_list.reshape(-1, 6)
         # print('label_nn_test(Test)', lnn_input)
+    # 產生輸出後再正規化一次
+    lnn_test_input_list = preprocessing.scale(lnn_input_list)
+
+    # Save the one that has the best accuracy
+    lnn_input_list = np.array([])
+    for train_data, train_label in zip(X_train, y_train):
+        lnn_input = get_fnn_output(train_data, fnn_attribute)
+        lnn_input_list = np.append(lnn_input_list, lnn_input)
+        lnn_input_list = lnn_input_list.reshape(-1, 6)
+        # print('label_nn_test(Test)', lnn_input)
+
+    # 產生輸出後再正規化一次
+    lnn_train_input_list = preprocessing.scale(lnn_input_list)
 
     # Train the Label NN start
     print('<---Train the Label NN Start--->')
@@ -360,29 +380,32 @@ def train_label_nn(fnn_attribute, algorithm):
 
         lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
 
-        for train_data, train_label in zip(X_train, y_train):
-            # Calculate the input of the LNN
-            # By getting the output the FNN1 ~ FNN6
-            lnn_input = get_fnn_output(train_data, fnn_attribute)
 
-            # print('lnn_input', lnn_input)
 
-            # print('lnn_input(Train)', lnn_input)
-            try:
-                lnn.training_model(lnn_epoch, lnn_input, train_label)
-
-            except OverflowError:
-                print("<---Main.py(Something error had happen in train lnn)--->")
-                break
-            except ZeroDivisionError:
-                print("<---Main.py(Something error had happen in train lnn)--->")
-                break
+        # for train_data, train_label in zip(X_train, y_train):
+        #     # Calculate the input of the LNN
+        #     # By getting the output the FNN1 ~ FNN6
+        #     lnn_input = get_fnn_output(train_data, fnn_attribute)
+        #
+        #     # print('lnn_input', lnn_input)
+        #
+        #     # print('lnn_input(Train)', lnn_input)
+        #     try:
+        #         lnn.training_model(lnn_epoch, lnn_input, train_label)
+        #
+        #     except OverflowError:
+        #         print("<---Main.py(Something error had happen in train lnn)--->")
+        #         break
+        #     except ZeroDivisionError:
+        #         print("<---Main.py(Something error had happen in train lnn)--->")
+        #         break
 
         # Test the FNN model,
         # Encoding the label NN
         # Make the confusion matrix
         try:
-            test_output = lnn.testing_model(lnn_input_list)
+            lnn.training_model(fnn_epoch, lnn_train_input_list, y_train)
+            test_output = lnn.testing_model(lnn_test_input_list)
 
         except OverflowError:
             print("<---Main.py(Something error had happen in test lnn)--->")
@@ -453,33 +476,58 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     reduced_data = reduce_dimension(org_data, org_label, algorithm)
     # normalized_data = preprocessing.normalize(reduced_data)
     # reduced_data = normalization(reduced_data)
-    min_max_scaler = preprocessing.MinMaxScaler()
-    normalized_data = min_max_scaler.fit_transform(reduced_data)
+
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # normalized_data = min_max_scaler.fit_transform(reduced_data)
+
+    normalized_data = preprocessing.scale(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
     print('<---Test the Label NN Start--->')
-    test_output_list = np.array([])
-    for train_data, train_label in zip(X_train, y_train):
-        lnn_input = get_fnn_output(train_data, fnn_attribute)
-        # print('lnn_input(Test ALL)', lnn_input)
 
-        weight1 = lnn_attribute['Weight1']
-        weight2 = lnn_attribute['Weight2']
-        bias = lnn_attribute['Bias']
-
-        lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
-        test_output = lnn.forward(lnn_input)
-        test_output_list = np.append(test_output_list, test_output)
+    lnn_input_list = np.array([])
+    for test_data, test_label in zip(X_test, y_test):
+        lnn_input = get_fnn_output(test_data, fnn_attribute)
+        lnn_input_list = np.append(lnn_input_list, lnn_input)
+        lnn_input_list = lnn_input_list.reshape(-1, 6)
+        # print('label_nn_test(Test)', lnn_input)
+    # 產生輸出後再正規化一次
+    lnn_test_input_list = preprocessing.scale(lnn_input_list)
 
 
-        # # 直接投票法，不用LNN
-        # lnn_input = get_fnn_output(train_data, fnn_attribute)
-        # test_output_list = np.append(test_output_list, lnn_input)
+    # test_output_list = np.array([])
+    # for train_data, train_label in zip(X_train, y_train):
+    #     lnn_input = get_fnn_output(train_data, fnn_attribute)
+    #     # print('lnn_input(Test ALL)', lnn_input)
+    #
+    #     weight1 = lnn_attribute['Weight1']
+    #     weight2 = lnn_attribute['Weight2']
+    #     bias = lnn_attribute['Bias']
+    #
+    #     lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+    #     test_output = lnn.forward(lnn_input)
+    #     test_output_list = np.append(test_output_list, test_output)
+    #
+    #
+    #     # # 直接投票法，不用LNN
+    #     # lnn_input = get_fnn_output(train_data, fnn_attribute)
+    #     # test_output_list = np.append(test_output_list, lnn_input)
 
-    test_output_list = test_output_list.reshape(-1, 6)
-    label_pred = LabelNN.label_encode(test_output_list)
-    print('test_output_list', test_output_list)
+    final_output_list = np.array([])
+
+    weight1 = lnn_attribute['Weight1']
+    weight2 = lnn_attribute['Weight2']
+    bias = lnn_attribute['Bias']
+
+    lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+    final_output_list = lnn.forward(lnn_test_input_list)
+    final_output_list = final_output_list.reshape(-1, 6)
+
+
+    # test_output_list = test_output_list.reshape(-1, 6)
+    label_pred = LabelNN.label_encode(final_output_list)
+    print('test_output_list', final_output_list)
 
     # normalized_output = min_max_scaler.fit_transform(test_output_list)
     # print('normalized_output', normalized_output)
