@@ -62,24 +62,26 @@ lnn_random_size = 150
 Dimension reduce algorithm
 """
 # dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap', 'NCA, 'tSNE']
-dimension_reduce_algorithm = ['PCA']
+dimension_reduce_algorithm = ['tSNE']
 # , 'LFDA']
 
 # # Normalization the data
 # # The interval is between -1 and 1
-# def normalization(data):
-#     new_data = np.array([])
-#     tmp = data.T
-#     length = len(tmp[0])
-#     for array in tmp:
-#         sub_array = []
-#         max_value = max(array)
-#         min_value = min(array)
-#         for element in array:
-#             sub_array.append(2 * ((element - min_value) / (max_value - min_value)) - 1)
-#         new_data = np.append(new_data, sub_array)
-#     new_data = new_data.reshape(-1, length).T
-#     return new_data
+
+
+def normalization(data):
+    new_data = np.array([])
+    tmp = data.T
+    length = len(tmp[0])
+    for array in tmp:
+        sub_array = []
+        max_value = max(array)
+        min_value = min(array)
+        for element in array:
+            sub_array.append(2 * ((element - min_value) / (max_value - min_value)) - 1)
+        new_data = np.append(new_data, sub_array)
+    new_data = new_data.reshape(-1, length).T
+    return new_data
 
 
 # Create a storage to new picture
@@ -176,7 +178,10 @@ def train_local_fnn(nn, algorithm):
     # normalized_data = min_max_scaler.fit_transform(reduced_data)
 
     # 正規化 2
-    normalized_data = preprocessing.scale(reduced_data)
+    # normalized_data = preprocessing.scale(reduced_data)
+
+    # 正規化 3
+    normalized_data = normalization(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
     # print(X_train, X_train.shape)
@@ -334,7 +339,9 @@ def train_label_nn(fnn_attribute, algorithm):
     # min_max_scaler = preprocessing.MinMaxScaler()
     # normalized_data = min_max_scaler.fit_transform(reduced_data)
 
-    normalized_data = preprocessing.scale(reduced_data)
+    # normalized_data = preprocessing.scale(reduced_data)
+
+    normalized_data = normalization(reduced_data)
 
     # reduced_data = normalization(reduced_data)
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
@@ -355,7 +362,9 @@ def train_label_nn(fnn_attribute, algorithm):
         lnn_input_list = lnn_input_list.reshape(-1, 6)
         # print('label_nn_test(Test)', lnn_input)
     # 產生輸出後再正規化一次
-    lnn_test_input_list = preprocessing.scale(lnn_input_list)
+    # lnn_test_input_list = preprocessing.scale(lnn_input_list)
+
+    lnn_test_input_list = normalization(lnn_input_list)
 
     # Save the one that has the best accuracy
     lnn_input_list = np.array([])
@@ -366,7 +375,12 @@ def train_label_nn(fnn_attribute, algorithm):
         # print('label_nn_test(Test)', lnn_input)
 
     # 產生輸出後再正規化一次
-    lnn_train_input_list = preprocessing.scale(lnn_input_list)
+    # lnn_train_input_list = preprocessing.scale(lnn_input_list)
+
+    lnn_train_input_list = normalization(lnn_input_list)
+
+    for e in lnn_train_input_list:
+        print(e)
 
     # Train the Label NN start
     print('<---Train the Label NN Start--->')
@@ -409,6 +423,9 @@ def train_label_nn(fnn_attribute, algorithm):
             test_output = lnn.testing_model(lnn_test_input_list)
 
         except OverflowError:
+            print("<---Main.py(Something error had happen in test lnn)--->")
+            continue
+        except ZeroDivisionError:
             print("<---Main.py(Something error had happen in test lnn)--->")
             continue
 
@@ -481,21 +498,30 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     # min_max_scaler = preprocessing.MinMaxScaler()
     # normalized_data = min_max_scaler.fit_transform(reduced_data)
 
-    normalized_data = preprocessing.scale(reduced_data)
+    # normalized_data = preprocessing.scale(reduced_data)
+
+    normalized_data = normalization(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
     print('<---Test the Label NN Start--->')
 
-    lnn_input_list = np.array([])
-    for test_data, test_label in zip(X_test, y_test):
-        lnn_input = get_fnn_output(test_data, fnn_attribute)
-        lnn_input_list = np.append(lnn_input_list, lnn_input)
-        lnn_input_list = lnn_input_list.reshape(-1, 6)
+    test_output_list = np.array([])
+    # 直接投票法，不用LNN
+    for train_data, train_label in zip(X_train, y_train):
+        lnn_input = get_fnn_output(train_data, fnn_attribute)
+        test_output_list = np.append(test_output_list, lnn_input)
+
+    # lnn_input_list = np.array([])
+    # for test_data, test_label in zip(X_test, y_test):
+    #     lnn_input = get_fnn_output(test_data, fnn_attribute)
+    #     lnn_input_list = np.append(lnn_input_list, lnn_input)
+    # lnn_input_list = lnn_input_list.reshape(-1, 6)
         # print('label_nn_test(Test)', lnn_input)
     # 產生輸出後再正規化一次
-    lnn_test_input_list = preprocessing.scale(lnn_input_list)
+    # lnn_test_input_list = preprocessing.scale(lnn_input_list)
 
+    # lnn_test_input_list = normalization(lnn_input_list)
 
     # test_output_list = np.array([])
     # for train_data, train_label in zip(X_train, y_train):
@@ -517,18 +543,20 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
 
     final_output_list = np.array([])
 
-    weight1 = lnn_attribute['Weight1']
-    weight2 = lnn_attribute['Weight2']
-    bias = lnn_attribute['Bias']
+    # weight1 = lnn_attribute['Weight1']
+    # weight2 = lnn_attribute['Weight2']
+    # bias = lnn_attribute['Bias']
 
-    lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
-    final_output_list = lnn.forward(lnn_test_input_list)
-    final_output_list = final_output_list.reshape(-1, 6)
+    # lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+
+    # lnn_test_input_list = lnn_input_list.reshape(-1, 6)
+    # final_output_list = lnn.forward(lnn_test_input_list)
+    # final_output_list = final_output_list.reshape(-1, 6)
 
 
-    # test_output_list = test_output_list.reshape(-1, 6)
-    label_pred = LabelNN.label_encode(final_output_list)
-    print('test_output_list', final_output_list)
+    test_output_list = test_output_list.reshape(-1, 6)
+    label_pred = LabelNN.label_encode(test_output_list)
+    print('test_output_list', test_output_list)
 
     # normalized_output = min_max_scaler.fit_transform(test_output_list)
     # print('normalized_output', normalized_output)
@@ -560,7 +588,7 @@ def show_model(mean, stddev, weight):
         for j in range(-10, 10, 1):
             for k in range(-10, 10, 1):
                 tmp = np.append(data, np.array([i, j, k]))
-    data = data.reshape(-1, 10, 3) / 10
+    data = data.reshape(1, -1, 3) / 10
     fnn = FNN(
         fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size,
         mean, stddev, weight, fnn_lr, 1)
@@ -600,9 +628,9 @@ if __name__ == '__main__':
             fnn_weight.append(p3)
             fnn_accuracy.append(p4)
             fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
-            show_model(p1, p2, p3)
-            print('End')
-            x = input()
+            # show_model(p1, p2, p3)
+            # print('End')
+            # x = input()
 
         # Store and print those values
         header = ['Mean', 'Stddev', 'Weight', 'Local Accuracy']
@@ -619,36 +647,36 @@ if __name__ == '__main__':
             print(df)
             print('<----------------------------------------------->')
 
-        """
-        After training six FNN
-        We will train the seventh neural networks
-        This neural network is used to distinguish the behavior label
-        We record the mean, stddev, weight, the method of the reduced dimension
-        We will use above those values and input the data of the LNN_Train_data.xlsx
-        """
-        lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
-        header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
-        lnn_statistics = \
-            {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
-        # print('lnn_statistics\n', lnn_statistics)
-        for key, item in lnn_statistics.items():
-            print(key, '=>', item)
-
-        # Output the Confusion Matirx
-        print('<----------------------------------------------->')
-        pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-        print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
-        print('<----------------------------------------------->')
+        # """
+        # After training six FNN
+        # We will train the seventh neural networks
+        # This neural network is used to distinguish the behavior label
+        # We record the mean, stddev, weight, the method of the reduced dimension
+        # We will use above those values and input the data of the LNN_Train_data.xlsx
+        # """
+        # lnn_weight1, lnn_weight2, lnn_bias, lnn_accuracy, lnn_matrix = train_label_nn(fnn_statistics, algorithm)
+        # header = ['Weight1', 'Weight2', 'Bias', 'Label Accuracy']
+        # lnn_statistics = \
+        #     {header[0]: lnn_weight1, header[1]: lnn_weight2, header[2]: lnn_bias, header[3]: lnn_accuracy}
+        # # print('lnn_statistics\n', lnn_statistics)
+        # for key, item in lnn_statistics.items():
+        #     print(key, '=>', item)
+        #
+        # # Output the Confusion Matirx
+        # print('<----------------------------------------------->')
+        # pd_header = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+        # print('confusion matrix\n', pd.DataFrame(lnn_matrix, columns=pd_header, index=pd_header))
+        # print('<----------------------------------------------->')
 
 
         # Use the LNN_Train.xlsx to test all model
         # All model contain FNN1 ~ FNN6 and LNN
-        model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
+        # model_accuracy = test_all_model(fnn_statistics, lnn_statistics, algorithm)
 
         # """
         # 看輸出最大的
         # """
-        # model_accuracy = test_all_model(fnn_statistics, {}, algorithm)
+        model_accuracy = test_all_model(fnn_statistics, {}, algorithm)
         print('Model Accuracy', model_accuracy)
 
         end = time.time()
