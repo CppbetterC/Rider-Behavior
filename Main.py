@@ -42,10 +42,16 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_threshold = 0.0
 fnn_epoch = 10
 fnn_random_size = 100
 
+
+fnn_threshold1 = 0.0
+fnn_threshold2 = -0.6
+fnn_threshold3 = -0.6
+fnn_threshold4 = -0.6
+fnn_threshold5 = 0.0
+fnn_threshold6 = 0.0
 
 """
 # Label Neural Network Structure
@@ -82,6 +88,25 @@ def normalization(data):
         new_data = np.append(new_data, sub_array)
     new_data = new_data.reshape(-1, length).T
     return new_data
+
+
+def label_encode(nn, data):
+    label_pred = np.array([])
+    if nn == 1:
+        label_pred = np.array([1 if element >= fnn_threshold1 else 0 for element in data])
+    elif nn == 2:
+        label_pred = np.array([1 if element >= fnn_threshold2 else 0 for element in data])
+    elif nn == 3:
+        label_pred = np.array([1 if element >= fnn_threshold3 else 0 for element in data])
+    elif nn == 4:
+        label_pred = np.array([1 if element >= fnn_threshold4 else 0 for element in data])
+    elif nn == 5:
+        label_pred = np.array([1 if element >= fnn_threshold5 else 0 for element in data])
+    elif nn == 6:
+        label_pred = np.array([1 if element >= fnn_threshold6 else 0 for element in data])
+    else:
+        print('Error NN')
+    return label_pred
 
 
 # Create a storage to new picture
@@ -216,8 +241,8 @@ def train_local_fnn(nn, algorithm):
 
         # Test the FNN model, save the one that has the best accuracy
         test_output = fnn.testing_model(X_test)
-        label_pred = np.array([1 if element >= fnn_threshold else 0 for element in test_output])
 
+        label_pred = label_encode(nn, test_output)
         # print(y_test.shape)
         # print(label_pred.shape)
         # print(y_test)
@@ -556,7 +581,8 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
 
     test_output_list = test_output_list.reshape(-1, 6)
     label_pred = LabelNN.label_encode(test_output_list)
-    print('test_output_list', test_output_list)
+    for x, y in zip(test_output_list, org_label):
+        print(x, ' ', y)
 
     # normalized_output = min_max_scaler.fit_transform(test_output_list)
     # print('normalized_output', normalized_output)
@@ -595,7 +621,7 @@ def show_model(mean, stddev, weight):
 
     for element in data:
         output = np.append(output, fnn.forward(element))
-    ModelScatter.output_scatter_3d(data, output, fnn_threshold)
+    ModelScatter.output_scatter_3d(data, output, fnn_threshold1)
 
 
 if __name__ == '__main__':

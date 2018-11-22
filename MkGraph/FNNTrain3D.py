@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn import preprocessing
 
 from Method.LoadData import LoadData
+from Method.Normalize import Normalize
 from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
 """
@@ -25,7 +26,8 @@ color_list = ['r', 'b', 'g', 'y', 'c', 'k']
 #      'NPE', 'LPP', 'SPE', 'LLTSA','CCA', 'MVU', 'LandmarkMVU', 'FastMVU', 'LLC',
 #      'ManifoldChart', 'CFA', 'GPLVM', 'Autoencoder', , 'MCML', ]
 
-reduced_algorithm = ['tSNE']
+reduced_algorithm = ['MDS']
+dimension = 3
 
 # Run the experiment from one dimension to five dimension
 for algorithm in reduced_algorithm:
@@ -33,19 +35,29 @@ for algorithm in reduced_algorithm:
         # Read file LNN_Train_data.xlsx'
         org_data, org_label = LoadData.get_fnn_training_data(nn)
 
+        reduced_data = np.array([])
+        # Dimension Reduce
+        if algorithm == "NCA":
+            reduced_data = ra.nca(org_data, org_label, dimension)
+        elif algorithm == "tSEN":
+            reduced_data = ra.tsne(org_data, dimension)
+        elif algorithm == "LLE":
+            reduced_data = ra.lle(org_data, dimension)
+        elif algorithm == "sparse_pca":
+            reduced_data = ra.sparse_pca(org_data, dimension)
+        elif algorithm == "LFDA":
+            reduced_data = ra.lfda(org_data, org_label, dimension)
+        elif algorithm == "PCA":
+            reduced_data = ra.pca(org_data, dimension)
+        elif algorithm == "Isomap":
+            reduced_data = ra.isomap(org_data, dimension)
+        elif algorithm == 'MDS':
+            reduced_data = ra.mds(org_data, dimension)
+        else:
+            print("<---Not Choose the dimension reduce algorithm--->")
+
         # Normalize the data
-        # normalized_data = preprocessing.normalize(org_data, norm='l1')
-        # print(normalized_data)
-        min_max_scaler = preprocessing.MinMaxScaler()
-        normalized_data = min_max_scaler.fit_transform(org_data)
-
-        # reduced_data = ra.nca(normalized_data, org_label, dim)
-        # reduced_data = ra.lfda(normalized_data, org_label, dim)
-        reduced_data = ra.mlkr(normalized_data, org_label, dim)
-
-        # 呼叫不同的降維法去降維, 取特徵直
-        # normalized_data = preprocessing.normalize(reduced_data, norm='l1')
-        normalized_data = min_max_scaler. fit_transform(reduced_data)
+        normalized_data = Normalize.normalization(reduced_data)
         print(normalized_data)
 
         # Split the original data
