@@ -1,13 +1,3 @@
-"""
-由 Original_data 統計出來個別標籤的數量
-c1, 21
-c2, 5578
-c3, 248
-c4, 418
-c5, 35
-c6, 5
-"""
-
 import os, sys
 import time
 import copy
@@ -25,6 +15,7 @@ from sklearn.manifold import Isomap
 from sklearn import preprocessing
 
 from Method.LoadData import LoadData
+from Method.Normalize import Normalize
 from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 from Algorithm.FNN import FNN
 from Algorithm.LabelNN import LabelNN
@@ -42,14 +33,14 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_epoch = 10
+fnn_epoch = 3
 fnn_random_size = 100
 
 
-fnn_threshold1 = 0.0
-fnn_threshold2 = -0.6
-fnn_threshold3 = -0.6
-fnn_threshold4 = -0.6
+fnn_threshold1 = -0.2
+fnn_threshold2 = -0.2
+fnn_threshold3 = -0.2
+fnn_threshold4 = -0.2
 fnn_threshold5 = 0.0
 fnn_threshold6 = 0.0
 
@@ -61,8 +52,8 @@ lnn_input_size = 6
 lnn_hidden_size = 6
 lnn_output_size = 6
 lnn_lr = 0.001
-lnn_epoch = 1
-lnn_random_size = 150
+lnn_epoch = 2
+lnn_random_size = 120
 
 """
 Dimension reduce algorithm
@@ -73,21 +64,6 @@ dimension_reduce_algorithm = ['tSNE']
 
 # # Normalization the data
 # # The interval is between -1 and 1
-
-
-def normalization(data):
-    new_data = np.array([])
-    tmp = data.T
-    length = len(tmp[0])
-    for array in tmp:
-        sub_array = []
-        max_value = max(array)
-        min_value = min(array)
-        for element in array:
-            sub_array.append(2 * ((element - min_value) / (max_value - min_value)) - 1)
-        new_data = np.append(new_data, sub_array)
-    new_data = new_data.reshape(-1, length).T
-    return new_data
 
 
 def label_encode(nn, data):
@@ -206,7 +182,7 @@ def train_local_fnn(nn, algorithm):
     # normalized_data = preprocessing.scale(reduced_data)
 
     # 正規化 3
-    normalized_data = normalization(reduced_data)
+    normalized_data = Normalize.normalization(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
     # print(X_train, X_train.shape)
@@ -295,8 +271,8 @@ def train_local_fnn(nn, algorithm):
 
     abs_path = os.getcwd() + '\\Best_FNN_' + str(nn) + '_loss_trend.png'
     # Choose the best FNN to Plot loss on every epoch
-    ErrorPlot.loss_trend(
-        'Best_FNN_' + str(nn) + '_loss_trend', len(loss_list), loss_list, abs_path)
+    # ErrorPlot.loss_trend(
+    #     'Best_FNN_' + str(nn) + '_loss_trend', len(loss_list), loss_list, abs_path)
 
     # Choose the best Accuracy to Plot
     # rel_path = org_path + 'Accuracy vs FNN' + str(nn) + '.png'
@@ -366,7 +342,7 @@ def train_label_nn(fnn_attribute, algorithm):
 
     # normalized_data = preprocessing.scale(reduced_data)
 
-    normalized_data = normalization(reduced_data)
+    normalized_data = Normalize.normalization(reduced_data)
 
     # reduced_data = normalization(reduced_data)
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
@@ -389,7 +365,7 @@ def train_label_nn(fnn_attribute, algorithm):
     # 產生輸出後再正規化一次
     # lnn_test_input_list = preprocessing.scale(lnn_input_list)
 
-    lnn_test_input_list = normalization(lnn_input_list)
+    lnn_test_input_list = Normalize.normalization(lnn_input_list)
 
     # Save the one that has the best accuracy
     lnn_input_list = np.array([])
@@ -402,7 +378,7 @@ def train_label_nn(fnn_attribute, algorithm):
     # 產生輸出後再正規化一次
     # lnn_train_input_list = preprocessing.scale(lnn_input_list)
 
-    lnn_train_input_list = normalization(lnn_input_list)
+    lnn_train_input_list = Normalize.normalization(lnn_input_list)
 
     for e in lnn_train_input_list:
         print(e)
@@ -525,7 +501,7 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
 
     # normalized_data = preprocessing.scale(reduced_data)
 
-    normalized_data = normalization(reduced_data)
+    normalized_data = Normalize.normalization(reduced_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
 
@@ -533,8 +509,8 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
 
     test_output_list = np.array([])
     # 直接投票法，不用LNN
-    for train_data, train_label in zip(X_train, y_train):
-        lnn_input = get_fnn_output(train_data, fnn_attribute)
+    for test_data, test_label in zip(X_test, y_test):
+        lnn_input = get_fnn_output(test_data, fnn_attribute)
         test_output_list = np.append(test_output_list, lnn_input)
 
     # lnn_input_list = np.array([])
@@ -578,17 +554,16 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     # final_output_list = lnn.forward(lnn_test_input_list)
     # final_output_list = final_output_list.reshape(-1, 6)
 
-
     test_output_list = test_output_list.reshape(-1, 6)
     label_pred = LabelNN.label_encode(test_output_list)
-    for x, y in zip(test_output_list, org_label):
+    for x, y in zip(test_output_list, y_test):
         print(x, ' ', y)
 
     # normalized_output = min_max_scaler.fit_transform(test_output_list)
     # print('normalized_output', normalized_output)
     # label_pred = LabelNN.label_encode(normalized_output)
 
-    C_matrix = confusion_matrix(y_train, label_pred)
+    C_matrix = confusion_matrix(y_test, label_pred)
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
 
     print('This is the confusion matrix(test_all_model)\n', C_matrix)
@@ -625,8 +600,6 @@ def show_model(mean, stddev, weight):
 
 
 if __name__ == '__main__':
-
-
 
     for algorithm in dimension_reduce_algorithm:
 

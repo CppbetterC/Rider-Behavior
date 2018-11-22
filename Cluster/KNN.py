@@ -9,6 +9,7 @@ from sklearn import preprocessing
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 from Method.LoadData import LoadData
+from Method.Normalize import Normalize
 from MkGraph.AccuracyPlot import AccuracyPlot
 
 """
@@ -27,15 +28,16 @@ for element in dim:
     org_data, org_label = LoadData.get_lnn_training_data()
 
     # Normalize the data
-    normalized_data = preprocessing.normalize(org_data)
+    # normalized_data = preprocessing.normalize(org_data)
     # print(normalized_data)
 
     # Use LDA algorithm to reduce the dimensions
     lda = LinearDiscriminantAnalysis(n_components=element)
-    lda.fit(normalized_data, org_label)
-    reduced_data = lda.transform(normalized_data)
+    lda.fit(org_data, org_label)
+    reduced_data = lda.transform(org_data)
 
-    normalized_data = preprocessing.normalize(reduced_data)
+    # normalized_data = preprocessing.normalize(reduced_data)
+    normalized_data = Normalize.normalization(reduced_data)
     print(normalized_data)
 
     X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)

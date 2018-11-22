@@ -172,8 +172,20 @@ class LoadData:
         return data
 
     @staticmethod
-    def get_split_data(label_type, file):
+    def get_original_excel(label_type, file):
         path_name = '../Data/Labeling/' + label_type + '/' + file + '.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        columns = ['AccX', 'AccY', 'AccZ',
+                   'GyroX', 'GyroY', 'GyroZ',
+                   'MagX', 'MagY', 'MagZ', 'PreX', 'PreY']
+        data = excel_data.loc[:, columns].values
+        labels = excel_data.loc[:, ['Label']].values
+        return data, labels
+
+    @staticmethod
+    def get_split_data():
+        path_name = '../Data/Labeling/C/Split_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         columns = ['AccX', 'AccY', 'AccZ',

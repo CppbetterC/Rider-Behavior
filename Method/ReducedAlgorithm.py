@@ -124,6 +124,7 @@ class ReducedAlgorithm:
         result = mlkr.transform(data)
         return result
 
+
     # @staticmethod
     # def lmnn(data, label, dim):
     #     nca = LMNN(k=5, learn_rate=1e-6)

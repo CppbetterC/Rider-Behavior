@@ -19,7 +19,7 @@ from Method.SVMSMOTE import SVMSMOTE
 def build_train_data(org_data, nn_label):
     # big_num 是0.5比重的那個資料集的數量
     # small_num 是0.1比重的那個資料集的數量
-    big_num, small_num = 500, 100
+    big_num, small_num = 2000, 400
     header = ['Dim' + str(i) for i in range(1, 265, 1)]
     category = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
 

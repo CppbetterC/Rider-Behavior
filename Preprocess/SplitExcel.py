@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import statistics
 
+from Method.LoadData import LoadData
+
 # 用來整理 excel
 # 將多個分散的 excel 整合成一個大的 excel file
 # 這裡面的資料還要在用於 dataCombine 使用
@@ -13,7 +15,7 @@ class SplitExcel:
 
     def __init__(self, behavior, file_name):
         print('Split behavior = ', behavior, 'on the Excel')
-        self.behavior_type = behavior_type
+        self.behavior_type = behavior
         self.file_name = file_name                  # Store that we want to load
         self.idx = np.array([])                     # Store the label of the sheet on current location
         self.idx_value = np.array([])               # Store the index of the sheet
@@ -81,9 +83,12 @@ class SplitExcel:
                                 'MagX', 'MagY', 'MagZ',
                                 'PreX', 'PreY', 'Label']
                 # print('org_data\n', org_data)
+                # 平滑資料集
                 for data in org_data:
-                    array = SplitExcel.smooth(data)
+                    # array = SplitExcel.smooth(data)
+                    array = data
                     modified_data = np.append(modified_data, array)
+
                 modified_data = np.append(modified_data, org_label)
                 modified_data = modified_data.reshape(len(self.header), -1).T
                 pd_modified = pd.DataFrame(modified_data, columns=self.header)
@@ -115,14 +120,47 @@ class SplitExcel:
 
         return data
 
+##############################################################
+# file_name = \
+#     ['074', '091', '094', '108', '119', '121',
+#      '123', '124', '125', '126', '133', '134',
+#      '137', '140', '144', '146', '150', '154',
+#      '155', '163']
+# # 整合所有是 C 類標籤的資料
+# behavior_type = ['C']
+# for e in behavior_type:
+#     sp = SplitExcel(e, file_name)
 
-file_name = ['074', '091', '094', '108', '119', '121', '123', '124', '125', '126']
 
-# file_name = ['074', '091', '094', '108', '119', '121',
-#  '123', '124', '125', '126', '133', '134', '137', '140',
-#  '144', '146', '150', '154', '155', '163']
-# behavior_type = ['A', 'B', 'C', 'D', 'E']
+##############################################################
+# 平滑資料集
+org_data, org_label = LoadData.get_split_data()
+print(org_data.shape)
+print(org_label.shape)
 
-behavior_type = ['C']
-for e in behavior_type:
-    sp = SplitExcel(e, file_name)
+# 平滑化
+result = np.array([])
+for array in org_data:
+    std = np.std(array)
+    means = np.mean(array)
+    up_bound = means + std * 3
+    low_bound = means - std * 3
+    for i in range(0, len(array), 1):
+        if low_bound > array[i] > up_bound:
+            print('<---smooth--->')
+            if 0 < i < len(array) - 1:
+                result = np.append(result, (array[i-1]+array[i+1])/2)
+        else:
+            result = np.append(result, array[i])
+
+columns = ['AccX', 'AccY', 'AccZ',
+           'GyroX', 'GyroY', 'GyroZ',
+           'MagX', 'MagY', 'MagZ', 'PreX', 'PreY']
+
+result = result.reshape(-1, len(columns))
+pd_result = pd.DataFrame(result, columns=columns)
+pd_label = pd.DataFrame(org_label, columns=['Label'])
+pd_result = pd.concat([pd_result, pd_label], axis=1)
+print(pd_result)
+pd_result.to_excel('../Data/Labeling/C/Split_data.xlsx', sheet_name='Data', index=False)
+print('Successfully')

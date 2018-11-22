@@ -18,7 +18,7 @@ from Method.Export import Export
 label_type = 'C'
 
 load = LoadData()
-load_data, org_label = load.get_split_data(label_type, 'Split_data')
+load_data, org_label = load.get_original_excel(label_type, 'Split_data')
 
 
 # Convert the original data to the data with 264 dimensions

@@ -26,7 +26,7 @@ color_list = ['r', 'b', 'g', 'y', 'c', 'k']
 #      'NPE', 'LPP', 'SPE', 'LLTSA','CCA', 'MVU', 'LandmarkMVU', 'FastMVU', 'LLC',
 #      'ManifoldChart', 'CFA', 'GPLVM', 'Autoencoder', , 'MCML', ]
 
-reduced_algorithm = ['MDS']
+reduced_algorithm = ['tSNE']
 dimension = 3
 
 # Run the experiment from one dimension to five dimension
@@ -39,7 +39,7 @@ for algorithm in reduced_algorithm:
         # Dimension Reduce
         if algorithm == "NCA":
             reduced_data = ra.nca(org_data, org_label, dimension)
-        elif algorithm == "tSEN":
+        elif algorithm == "tSNE":
             reduced_data = ra.tsne(org_data, dimension)
         elif algorithm == "LLE":
             reduced_data = ra.lle(org_data, dimension)
@@ -53,6 +53,8 @@ for algorithm in reduced_algorithm:
             reduced_data = ra.isomap(org_data, dimension)
         elif algorithm == 'MDS':
             reduced_data = ra.mds(org_data, dimension)
+        elif algorithm == "FactorAnalysis":
+            reduced_data = ra.factor_analysis(org_data, dimension)
         else:
             print("<---Not Choose the dimension reduce algorithm--->")
 
