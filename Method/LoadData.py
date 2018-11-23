@@ -100,35 +100,6 @@ class LoadData:
                                         tmp.iat[0, 12], tmp.iat[0, 13], tmp.iat[0, 14]))
         return self.sensor_dim
 
-    # def get_refactor_spdata_txt(self, label):
-    #     path_name = '../Data/Labeling/C/Refactor_SpData_C' + str(label) + '.txt'
-    #     path_name = os.path.join(os.path.dirname(__file__), path_name)
-    #     data = np.array([])
-    #     labels = []
-    #     cnt = 1
-    #     with open(path_name, 'r', encoding='utf-8') as f:
-    #         while True:
-    #             dd = f.readline()
-    #             if dd == "":
-    #                 break
-    #             array = [float(x) for x in dd.split(' ')[0: -1]]
-    #             tmp = np.array(array)
-    #             data = np.append(data, tmp)
-    #             length = int(len(tmp) / 3)
-    #             labels.extend(['C'+str(cnt) for _ in range(length)])
-    #             cnt += 1
-    #     f.close()
-    #     return data, labels
-
-    # @staticmethod
-    # def get_balanced_excel(label):
-    #     path_name = '../Data/Labeling/C/Refactor_data_C' + str(label) + '.xlsx'
-    #     path_name = os.path.join(os.path.dirname(__file__), path_name)
-    #     excel_data = pd.read_excel(path_name)
-    #     data = excel_data.loc[:, ['Dim1', 'Dim2', 'Dim3']].values
-    #     labels = excel_data.loc[:, ['label']].values
-    #     return data, labels
-
     @staticmethod
     def get_test_data():
         header = ['Dim' + str(i) for i in range(1, 265, 1)]

@@ -18,7 +18,7 @@ class ErrorPlot:
         plt.xlabel('Modified Times')
         plt.ylabel('Diff')
         plt.xlim(0, x_data)
-        plt.ylim(0, 1)
+        plt.ylim(0, np.max(y_data))
         plt.plot(np.array([i for i in range(x_data)]), y_data, marker='o')
         plt.savefig(path)
         plt.ion()
