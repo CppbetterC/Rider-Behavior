@@ -13,30 +13,24 @@ c5, 35
 c6, 5
 """
 
-import os, sys
+import os
 import time
 import copy
 import datetime
 import numpy as np
-import pandas as pd
 
 from sklearn.manifold import LocallyLinearEmbedding
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
-from sklearn.decomposition import PCA, FactorAnalysis
-from sklearn.manifold import MDS
+from sklearn.decomposition import PCA
 from sklearn.manifold import Isomap
 from sklearn import preprocessing
 
 from Method.LoadData import LoadData
 from Algorithm.FNN import FNN
-from Algorithm.LabelNN import LabelNN
-from Algorithm.DNN import DNN
+from Algorithm.Keras.DNN import DNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
-
-from keras.utils import np_utils
-
 
 """
 # Fuzzy Neural Networks Structure

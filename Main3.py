@@ -24,7 +24,7 @@ fnn_output_size = 6
 fnn_weight_size = fnn_rule_size * fnn_output_size
 fnn_lr = 0.001
 fnn_epoch = 1
-fnn_random_size = 1
+fnn_random_size = 60
 
 dimension_reduce_algorithm = "LDA"
 dim = 5
@@ -83,6 +83,8 @@ if __name__ == '__main__':
         # Test the FNN model, save the one that has the best accuracy
         test_output = fnn.testing_model(X_test)
         test_output = test_output.reshape(-1, 6)
+        for x, y in zip(test_output, y_test):
+            print(x, ' ', y)
         label_prediction = fnn.label_encode(test_output)
         C_matrix = confusion_matrix(y_test, label_prediction)
         C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)

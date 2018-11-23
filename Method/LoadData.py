@@ -165,6 +165,3 @@ class LoadData:
         data = excel_data.loc[:, columns].values
         labels = excel_data.loc[:, ['Label']].values
         return data, labels
-
-
-# LoadData.get_analysis_excel('074')
