@@ -1,10 +1,12 @@
 """
-這是個對於在安全帽上面收集到的資料進行取特徵值的動作
+這是個對於在安全帽上面收集到的資料進行取特徵值的動作的程式碼
 這個 python script 把 Data/Labeling/C/Split_data.xlsx
-轉換成有264維度的原始資料集
+用 Formula.py 的公式去轉換成坐標點的資料集
+轉換成有264維度的原始資料集(88+88+88)
 是每 2、4和6 筆取出的資料用公式計算後
 取出的特徵值 (Feature)
-命名為 Original_data.xlsx
+窗格大小在移動的時候必須重疊與前一筆資料重疊(1/2)的
+並命名為 Original_data.xlsx
 """
 
 import os

@@ -21,20 +21,20 @@ class DataCombine:
         # print(normalized_data, normalized_data.shape)
 
         # windows2, windows4, windows6 = (np.array([]) for _ in range(3))
-        windows2 = DataCombine.__moving_windows(normalized_data, 2)
-        windows4 = DataCombine.__moving_windows(normalized_data, 4)
-        windows6 = DataCombine.__moving_windows(normalized_data, 6)
+        windows2 = DataCombine.__moving_windows(normalized_data, 2, 1)
+        windows4 = DataCombine.__moving_windows(normalized_data, 4, 2)
+        windows6 = DataCombine.__moving_windows(normalized_data, 6, 3)
 
         result = np.concatenate((windows2, windows4, windows6), axis=1)
         # print('result', result, result.shape)
         return result
 
     @staticmethod
-    def __moving_windows(data, windows_size):
+    def __moving_windows(data, windows_size, step):
         result = np.array([])
         for i in range(len(data)):
             feature = np.array([])
-            for j in range(len(data[i])):
+            for j in range(0, len(data[i]), step):
                 windows_data = np.array([]).astype('float64')
                 if windows_size == 2:
                     start = j if j < len(data[i])-1 else (j-1)

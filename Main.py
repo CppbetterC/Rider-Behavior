@@ -37,10 +37,10 @@ fnn_epoch = 3
 fnn_random_size = 100
 
 
-fnn_threshold1 = -0.2
-fnn_threshold2 = -0.2
-fnn_threshold3 = -0.2
-fnn_threshold4 = -0.2
+fnn_threshold1 = 0.0
+fnn_threshold2 = 0.0
+fnn_threshold3 = 0.0
+fnn_threshold4 = 0.0
 fnn_threshold5 = 0.0
 fnn_threshold6 = 0.0
 
