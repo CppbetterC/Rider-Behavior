@@ -4,3 +4,9 @@
 # Step3, use the Preprocess/BulidTrainData.py to generate the FNN　training data
 # Step4, use Main.py to predict the label by fnn, lnn, DNN
 
+# <---Important information--->
+# If the the performance of the neural networks is poor
+# We need to seperate the data set by Method/SeparateDataSet.py
+# To improve the performance
+
+
