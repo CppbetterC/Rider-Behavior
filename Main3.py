@@ -1,3 +1,9 @@
+"""
+Other Fuzzy Neural Networks
+Fuzzy Neural Networks Structure
+Fuzzy Data Set are 24000
+"""
+
 import time
 import copy
 import numpy as np
@@ -12,10 +18,7 @@ from Algorithm.FNN2 import FNN2
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
 
-"""
-# Fuzzy Neural Networks Structure
-# Fuzzy Data Set are 24000
-"""
+
 fnn_label_size = 6
 fnn_input_size = 5
 fnn_membership_size = fnn_input_size * fnn_label_size

@@ -25,7 +25,26 @@ class DataCombine:
         windows4 = DataCombine.__moving_windows(normalized_data, 4, 2)
         windows6 = DataCombine.__moving_windows(normalized_data, 6, 3)
 
-        result = np.concatenate((windows2, windows4, windows6), axis=1)
+        # print('windows2', windows2)
+        # print('windows4', windows4)
+        # print('windows6', windows6)
+
+        print('windows2', windows2.shape)
+        print('windows4', windows4.shape)
+        print('windows6', windows6.shape)
+
+        min_length = min([windows2.shape[0], windows4.shape[0], windows6.shape[0]])
+        new_windows2 = DataCombine.sub_matrices(windows2, min_length)
+        new_windows4 = DataCombine.sub_matrices(windows4, min_length)
+        new_windows6 = DataCombine.sub_matrices(windows6, min_length)
+
+        print('new_windows2', new_windows2.shape)
+        print('new_windows4', new_windows4.shape)
+        print('new_windows6', new_windows6.shape)
+
+        result = np.concatenate((new_windows2, new_windows4, new_windows6), axis=1)
+
+        # print('result', result)
         # print('result', result, result.shape)
         return result
 
@@ -60,9 +79,15 @@ class DataCombine:
                 array = DataCombine.extract_feature(windows_data).reshape(-1, 8)
                 if len(feature) == 0:
                     feature = array
-
+                    for _ in range(step-1):
+                        feature = np.concatenate((feature, array), axis=0)
                 else:
-                    feature = np.concatenate((feature, array), axis=0)
+                    # Decide how much the data need to be copy
+                    # windows(2) -> 1 time
+                    # windows(4) -> 2 times
+                    # windows(6) -> 3 times
+                    for _ in range(step):
+                        feature = np.concatenate((feature, array), axis=0)
             # print('feature', feature, feature.shape)
             if len(result) == 0:
                 result = feature
@@ -83,3 +108,10 @@ class DataCombine:
         feature = np.append(feature, Formula.maximum(data))
         feature = np.append(feature, Formula.minimum(data))
         return feature
+
+    @staticmethod
+    def sub_matrices(data, length):
+        data_length = data.shape[0]
+        for i in range(data_length - length):
+            data = np.delete(data, -1, 0)
+        return data

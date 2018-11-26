@@ -3,16 +3,6 @@ This script train the NN1, NN5, NN6 with Fuzzy Neural Networks
 And train the NN2, NN3, NN4 with Deep Neural Networks
 """
 
-"""
-由 Original_data 統計出來個別標籤的數量
-c1, 21
-c2, 5578
-c3, 248
-c4, 418
-c5, 35
-c6, 5
-"""
-
 import os
 import time
 import copy
