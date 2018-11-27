@@ -26,6 +26,7 @@ Evaluation algorithm -> the max deviation of all cluster
 
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from sklearn.cluster import KMeans
 from sklearn import metrics
@@ -76,34 +77,38 @@ class SeparateDataSet:
         print('cluster_label', cluster_label)
         print('cluster_length', set(cluster_label))
 
+        print(data)
+        print(data.shape)
+
         array_dict = {}
         for i in range(len(set(cluster_label))):
             array = np.array([])
-            for j in range(len(cluster_label)):
-                if cluster_label[j] == i:
-                     if bool(array) == 0:
-                         array = data[j]
-                     else:
-                        array = np.concatenate((array, data[j]), axis=1)
+            for element, label in zip(data, cluster_label):
+                if label == i:
+                    if len(array) == 0:
+                        array = element.reshape(-1, 3)
+                    else:
+                        array = np.concatenate((array, element.reshape(-1, 3)), axis=0)
             array_dict[i] = array
         print('array_dict', array_dict)
-        print('stop')
-        xx=input()
 
-        # plt.figure(figsize=(8, 6), dpi=100)
-        # plt.title("Evaluated_Scores vs Cluster")
-        # plt.xlabel('Cluster')
-        # plt.ylabel('Evaluated_Scores')
-        # plt.xlim(np.min(np_cluster) - 1, np.max(np_cluster) + 1)
-        # plt.ylim(np.min(evaluated_scores), np.max(evaluated_scores))
-        # for i in range(len(array_dict)):
-        #
-        #     plt.plot(, evaluated_scores, marker='o')
+        # Make Scatter Graph
+        fig = plt.figure(figsize=(8, 6), dpi=100)
+        ax = Axes3D(fig)
+        cmap = plt.cm.get_cmap('viridis')
+        ax.set_title("Data scatter with cluster_"+str(num))
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1)
+        ax.set_zlim(-1, 1)
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
+        for i in range(len(array_dict)):
+            tmp = array_dict[i].T
+            ax.scatter(tmp[0], tmp[1], tmp[2], marker='o', cmap=cmap)
         # plt.savefig()
-        # # plt.show("Evaluated_Scores_fnn" + str(i) + "_data.png")
-        # # plt.ion()
-        # # plt.pause(5)
-        # plt.close()
+        plt.show("Data scatter with cluster_" + str(num) + ".png")
+        plt.close()
 
 
 """
@@ -123,8 +128,7 @@ print('<---1. Use the calinski_harabaz_score to evaluate--->')
 print('<---2. Use the calculate_by_deviation to evaluate--->')
 print('<---3. Use the silhouette_score to evaluate--->')
 print('<---4. Show Cluster Scatter--->')
-print('<---Please Choose--->')
-method = input()
+method = input('<---Please Choose--->: ')
 
 for i in range(1, 7, 1):
     # Load data and reduced the dimension
@@ -146,19 +150,19 @@ for i in range(1, 7, 1):
     values = np.array([])
     for j in range(start_cluster, end_cluster + 1, 1):
         # Use the calinski_harabaz_score to evaluate
-        if method == 1:
+        if method == '1':
             values = SeparateDataSet.calinski_harabaz_score(j, normalized_data)
 
         # Use the cluster deviation to evaluate
         # 找最大的那個標準差是會最小的
-        elif method == 2:
+        elif method == '2':
             values = SeparateDataSet.calculate_by_deviation(j, normalized_data)
 
-        elif method == 3:
+        elif method == '3':
             values = SeparateDataSet.silhouette_score(j, normalized_data)
 
         # Use the silhouette_score to evaluate
-        elif method == 4:
+        elif method == '4':
             SeparateDataSet.show(j, normalized_data)
             continue
 
@@ -167,15 +171,16 @@ for i in range(1, 7, 1):
 
         evaluated_scores = np.append(evaluated_scores, values)
 
-    plt.figure(figsize=(8, 6), dpi=80)
-    plt.title("Evaluated_Scores vs Cluster")
-    plt.xlabel('Cluster')
-    plt.ylabel('Evaluated_Scores')
-    plt.xlim(np.min(np_cluster) - 1, np.max(np_cluster) + 1)
-    plt.ylim(np.min(evaluated_scores), np.max(evaluated_scores))
-    plt.plot(np_cluster, evaluated_scores, marker='o')
-    plt.savefig()
-    # plt.show("Evaluated_Scores_fnn" + str(i) + "_data.png")
-    # plt.ion()
-    # plt.pause(5)
-    plt.close()
+    if not len(evaluated_scores) == 0:
+        plt.figure(figsize=(8, 6), dpi=80)
+        plt.title("Evaluated_Scores vs Cluster")
+        plt.xlabel('Cluster')
+        plt.ylabel('Evaluated_Scores')
+        plt.xlim(np.min(np_cluster) - 1, np.max(np_cluster) + 1)
+        plt.ylim(np.min(evaluated_scores), np.max(evaluated_scores))
+        plt.plot(np_cluster, evaluated_scores, marker='o')
+        # plt.savefig("Evaluated_Scores_fnn" + str(i) + "_data.png")
+        plt.show()
+        # plt.ion()
+        # plt.pause(5)
+        plt.close()
