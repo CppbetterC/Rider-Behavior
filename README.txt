@@ -6,7 +6,8 @@
 
 # <---Important information--->
 # If the the performance of the neural networks is poor
-# We need to seperate the data set by Method/SeparateDataSet.py
+# We need to split the Original_data.xlsx with different label(C1~C6) by Preprocess/SplitOriginalData.py
+# And, we start to seperate the data set by Preprocess/ObserveDataSet.py
 # To improve the performance
 
 

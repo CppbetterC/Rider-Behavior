@@ -26,7 +26,8 @@ color_list = ['r', 'b', 'g', 'y', 'c', 'k']
 #      'NPE', 'LPP', 'SPE', 'LLTSA','CCA', 'MVU', 'LandmarkMVU', 'FastMVU', 'LLC',
 #      'ManifoldChart', 'CFA', 'GPLVM', 'Autoencoder', , 'MCML', ]
 
-reduced_algorithm = ['tSNE']
+# Best -> tSNE
+reduced_algorithm = ['PCA']
 dimension = 3
 
 # Run the experiment from one dimension to five dimension
@@ -91,7 +92,7 @@ for algorithm in reduced_algorithm:
         ax.set_title('NN Scatter3D')
 
         # Output the graph
-        rel_path = '../Data/Graph/' + algorithm + '_Graph_FNN' + str(nn) + '_' + '.png'
+        rel_path = '../Experiment/Graph/' + algorithm + '_Graph_FNN' + str(nn) + '_' + '.png'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         plt.savefig(abs_path)
         plt.show()

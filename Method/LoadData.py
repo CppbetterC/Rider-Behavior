@@ -165,3 +165,15 @@ class LoadData:
         data = excel_data.loc[:, columns].values
         labels = excel_data.loc[:, ['Label']].values
         return data, labels
+
+    @staticmethod
+    def get_split_original_data(num):
+        header = ['Dim' + str(i) for i in range(1, 265, 1)]
+        # header.append('Label')
+        path_name = '../Data/Labeling/C/Split_C'+str(num)+'Original_data.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        data = excel_data.loc[:, header]
+        labels = excel_data.loc[:, ['Label']].values.ravel()
+        labels_new = np.array([int(e[1]) for e in labels])
+        return data, labels_new

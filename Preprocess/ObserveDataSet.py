@@ -70,7 +70,7 @@ class SeparateDataSet:
         return metrics.silhouette_score(data, cluster_label)
 
     @staticmethod
-    def show(num, data):
+    def show(num, data, label_type):
         kmeans = KMeans(n_clusters=num, random_state=0).fit(data)
         cluster_label = kmeans.labels_
         print('kmeans', kmeans)
@@ -96,7 +96,7 @@ class SeparateDataSet:
         fig = plt.figure(figsize=(8, 6), dpi=100)
         ax = Axes3D(fig)
         cmap = plt.cm.get_cmap('viridis')
-        ax.set_title("Data scatter with cluster_"+str(num))
+        ax.set_title("Data scatter with cluster_" + str(num) + '(' + label_type + ')')
         ax.set_xlim(-1, 1)
         ax.set_ylim(-1, 1)
         ax.set_zlim(-1, 1)
@@ -107,7 +107,7 @@ class SeparateDataSet:
             tmp = array_dict[i].T
             ax.scatter(tmp[0], tmp[1], tmp[2], marker='o', cmap=cmap)
         # plt.savefig()
-        plt.show("Data scatter with cluster_" + str(num) + ".png")
+        plt.show("Data scatter with cluster_" + str(num) + '(' + label_type + ')' + ".png")
         plt.close()
 
 
@@ -132,7 +132,7 @@ method = input('<---Please Choose--->: ')
 
 for i in range(1, 7, 1):
     # Load data and reduced the dimension
-    org_data, org_label = LoadData.get_fnn_training_data(i)
+    org_data, org_label = LoadData.get_split_original_data(i)
 
     reduced_data = np.array([])
     if algorithm == 'PCA' or 'pca':
@@ -163,7 +163,7 @@ for i in range(1, 7, 1):
 
         # Use the silhouette_score to evaluate
         elif method == '4':
-            SeparateDataSet.show(j, normalized_data)
+            SeparateDataSet.show(j, normalized_data, 'C'+str(i))
             continue
 
         else:
