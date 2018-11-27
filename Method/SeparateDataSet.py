@@ -32,6 +32,7 @@ from sklearn import metrics
 
 from Method.LoadData import LoadData
 from Method.ReducedAlgorithm import ReducedAlgorithm as ra
+from Method.Normalize import Normalize
 
 
 class SeparateDataSet:
@@ -39,8 +40,8 @@ class SeparateDataSet:
     @staticmethod
     def calinski_harabaz_score(num, data):
         kmeans = KMeans(n_clusters=num, random_state=0).fit(data)
-        prediction_label = kmeans.predict(data)
-        return metrics.calinski_harabaz_score(data, prediction_label)
+        cluster_label = kmeans.labels_
+        return metrics.calinski_harabaz_score(data, cluster_label)
 
     @staticmethod
     def calculate_by_deviation(num, data):
@@ -61,17 +62,69 @@ class SeparateDataSet:
             std = np.append(std, np.std(array))
         return np.max(std)
 
+    @staticmethod
+    def silhouette_score(num, data):
+        kmeans = KMeans(n_clusters=num, random_state=0).fit(data)
+        cluster_label = kmeans.labels_
+        return metrics.silhouette_score(data, cluster_label)
+
+    @staticmethod
+    def show(num, data):
+        kmeans = KMeans(n_clusters=num, random_state=0).fit(data)
+        cluster_label = kmeans.labels_
+        print('kmeans', kmeans)
+        print('cluster_label', cluster_label)
+        print('cluster_length', set(cluster_label))
+
+        array_dict = {}
+        for i in range(len(set(cluster_label))):
+            array = np.array([])
+            for j in range(len(cluster_label)):
+                if cluster_label[j] == i:
+                     if bool(array) == 0:
+                         array = data[j]
+                     else:
+                        array = np.concatenate((array, data[j]), axis=1)
+            array_dict[i] = array
+        print('array_dict', array_dict)
+        print('stop')
+        xx=input()
+
+        # plt.figure(figsize=(8, 6), dpi=100)
+        # plt.title("Evaluated_Scores vs Cluster")
+        # plt.xlabel('Cluster')
+        # plt.ylabel('Evaluated_Scores')
+        # plt.xlim(np.min(np_cluster) - 1, np.max(np_cluster) + 1)
+        # plt.ylim(np.min(evaluated_scores), np.max(evaluated_scores))
+        # for i in range(len(array_dict)):
+        #
+        #     plt.plot(, evaluated_scores, marker='o')
+        # plt.savefig()
+        # # plt.show("Evaluated_Scores_fnn" + str(i) + "_data.png")
+        # # plt.ion()
+        # # plt.pause(5)
+        # plt.close()
+
 
 """
 Basic parameter
 """
 algorithm = ["PCA"]
 dim = 3
-method = 2
+# method = 3
 
 start_cluster = 2
 end_cluster = 10
 np_cluster = np.array([i for i in range(start_cluster, end_cluster + 1, 1)])
+
+
+# Show Method List
+print('<---1. Use the calinski_harabaz_score to evaluate--->')
+print('<---2. Use the calculate_by_deviation to evaluate--->')
+print('<---3. Use the silhouette_score to evaluate--->')
+print('<---4. Show Cluster Scatter--->')
+print('<---Please Choose--->')
+method = input()
 
 for i in range(1, 7, 1):
     # Load data and reduced the dimension
@@ -87,21 +140,32 @@ for i in range(1, 7, 1):
     else:
         print('<---None dimension reduced--->')
 
+    normalized_data = Normalize.normalization(reduced_data)
+
     evaluated_scores = np.array([])
+    values = np.array([])
     for j in range(start_cluster, end_cluster + 1, 1):
         # Use the calinski_harabaz_score to evaluate
         if method == 1:
-            evaluated_scores =\
-                np.append(evaluated_scores, SeparateDataSet.calinski_harabaz_score(j, reduced_data))
+            values = SeparateDataSet.calinski_harabaz_score(j, normalized_data)
 
         # Use the cluster deviation to evaluate
         # 找最大的那個標準差是會最小的
         elif method == 2:
-            evaluated_scores =\
-                np.append(evaluated_scores, SeparateDataSet.calculate_by_deviation(j, reduced_data))
+            values = SeparateDataSet.calculate_by_deviation(j, normalized_data)
+
+        elif method == 3:
+            values = SeparateDataSet.silhouette_score(j, normalized_data)
+
+        # Use the silhouette_score to evaluate
+        elif method == 4:
+            SeparateDataSet.show(j, normalized_data)
+            continue
 
         else:
             print("<---Error evaluated method--->")
+
+        evaluated_scores = np.append(evaluated_scores, values)
 
     plt.figure(figsize=(8, 6), dpi=80)
     plt.title("Evaluated_Scores vs Cluster")
