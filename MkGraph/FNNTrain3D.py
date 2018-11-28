@@ -26,8 +26,14 @@ color_list = ['r', 'b', 'g', 'y', 'c', 'k']
 #      'NPE', 'LPP', 'SPE', 'LLTSA','CCA', 'MVU', 'LandmarkMVU', 'FastMVU', 'LLC',
 #      'ManifoldChart', 'CFA', 'GPLVM', 'Autoencoder', , 'MCML', ]
 
+# Show Method List
+print('<---1. tSNE--->')
+print('<---2. PCA--->')
+print('<---3. Isomap--->')
+reduced_algorithm = input('<---Please Choose the dimension reduced algorithm--->: ')
+
 # Best -> tSNE
-reduced_algorithm = ['PCA']
+# reduced_algorithm = ['tSNE']
 dimension = 3
 
 # Run the experiment from one dimension to five dimension
@@ -40,7 +46,7 @@ for algorithm in reduced_algorithm:
         # Dimension Reduce
         if algorithm == "NCA":
             reduced_data = ra.nca(org_data, org_label, dimension)
-        elif algorithm == "tSNE":
+        elif algorithm == "tSNE" or "1":
             reduced_data = ra.tsne(org_data, dimension)
         elif algorithm == "LLE":
             reduced_data = ra.lle(org_data, dimension)
@@ -48,9 +54,9 @@ for algorithm in reduced_algorithm:
             reduced_data = ra.sparse_pca(org_data, dimension)
         elif algorithm == "LFDA":
             reduced_data = ra.lfda(org_data, org_label, dimension)
-        elif algorithm == "PCA":
+        elif algorithm == "PCA" or "2":
             reduced_data = ra.pca(org_data, dimension)
-        elif algorithm == "Isomap":
+        elif algorithm == "Isomap" or "3":
             reduced_data = ra.isomap(org_data, dimension)
         elif algorithm == 'MDS':
             reduced_data = ra.mds(org_data, dimension)

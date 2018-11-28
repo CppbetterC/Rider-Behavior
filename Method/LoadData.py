@@ -173,7 +173,7 @@ class LoadData:
         path_name = '../Data/Labeling/C/Split_C'+str(num)+'Original_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
-        data = excel_data.loc[:, header]
+        data = excel_data.loc[:, header].values
         labels = excel_data.loc[:, ['Label']].values.ravel()
         labels_new = np.array([int(e[1]) for e in labels])
         return data, labels_new

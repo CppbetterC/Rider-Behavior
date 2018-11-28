@@ -25,6 +25,7 @@ Evaluation algorithm -> the max deviation of all cluster
 
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -70,7 +71,7 @@ class SeparateDataSet:
         return metrics.silhouette_score(data, cluster_label)
 
     @staticmethod
-    def show(num, data, label_type):
+    def show(num, data, data_label, label_type, output):
         kmeans = KMeans(n_clusters=num, random_state=0).fit(data)
         cluster_label = kmeans.labels_
         print('kmeans', kmeans)
@@ -92,6 +93,21 @@ class SeparateDataSet:
             array_dict[i] = array
         print('array_dict', array_dict)
 
+        """
+        Check print the result or not
+        """
+        if output == "y":
+            header = ['Dim' + str(i) for i in range(1, 265, 1)]
+            result = pd.DataFrame()
+            for j in range(len(array_dict)):
+                pd_data = pd.DataFrame(array_dict[j], columns=header)
+                tmp_label = ['C' + str(e) + '_' + str(j) for e in data_label]
+                pd_label = pd.DataFrame(np.array(tmp_label), columns='Label')
+                result = pd.concat((pd_data, pd_label), axis=1)
+            print(result)
+            xxx=input()
+            # continue
+
         # Make Scatter Graph
         fig = plt.figure(figsize=(8, 6), dpi=100)
         ax = Axes3D(fig)
@@ -106,15 +122,18 @@ class SeparateDataSet:
         for i in range(len(array_dict)):
             tmp = array_dict[i].T
             ax.scatter(tmp[0], tmp[1], tmp[2], marker='o', cmap=cmap)
-        # plt.savefig()
-        plt.show("Data scatter with cluster_" + str(num) + '(' + label_type + ')' + ".png")
+        plt.savefig("..\\Experiment\\ClusterScore\\"
+                    "Data scatter with cluster_" + str(num) + '(' + label_type + ')' + ".png")
+        # plt.show()
+        plt.ion()
+        plt.pause(3)
         plt.close()
 
 
 """
 Basic parameter
 """
-algorithm = ["PCA"]
+algorithm = ["tSNE"]
 dim = 3
 # method = 3
 
@@ -129,6 +148,9 @@ print('<---2. Use the calculate_by_deviation to evaluate--->')
 print('<---3. Use the silhouette_score to evaluate--->')
 print('<---4. Show Cluster Scatter--->')
 method = input('<---Please Choose--->: ')
+output_excel = 'n'
+if method == '4':
+    output_excel = input('<---Output Excel?(y/n)--->: ')
 
 for i in range(1, 7, 1):
     # Load data and reduced the dimension
@@ -163,7 +185,7 @@ for i in range(1, 7, 1):
 
         # Use the silhouette_score to evaluate
         elif method == '4':
-            SeparateDataSet.show(j, normalized_data, 'C'+str(i))
+            SeparateDataSet.show(j, normalized_data, org_label, 'C'+str(i), output_excel)
             continue
 
         else:
@@ -179,7 +201,8 @@ for i in range(1, 7, 1):
         plt.xlim(np.min(np_cluster) - 1, np.max(np_cluster) + 1)
         plt.ylim(np.min(evaluated_scores), np.max(evaluated_scores))
         plt.plot(np_cluster, evaluated_scores, marker='o')
-        # plt.savefig("Evaluated_Scores_fnn" + str(i) + "_data.png")
+        plt.savefig("..\\Experiment\\ClusterScore\\Evaluated_Scores_fnn" + str(i) + "_data.png")
+
         plt.show()
         # plt.ion()
         # plt.pause(5)
