@@ -39,8 +39,8 @@ for key, values in cluster_num.items():
     # print('kmeans', kmeans)
     # print('cluster_label', cluster_label)
     # print('cluster_length', set(cluster_label))
-    print(org_data)
-    print(org_data.shape)
+    # print(org_data)
+    # print(org_data.shape)
 
     array_dict = {}
     for j in range(len(set(cluster_label))):
@@ -53,7 +53,7 @@ for key, values in cluster_num.items():
                     array = np.concatenate((array, element.reshape(-1, 3)), axis=0)
         array_dict[j] = array
     # print('array_dict', array_dict)
-    # print('<---' + key + ' Successfully--->')
+    print('<---' + key + ' Successfully--->')
 
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     for i in range(len(array_dict)):
@@ -62,15 +62,15 @@ for key, values in cluster_num.items():
             np.array([key + '_' + str(i) for _ in range(len(array_dict[i]))]).reshape(-1, 1)
         pd_label = pd.DataFrame(tmp_label, columns=['Label'])
         result = pd.concat((pd_data, pd_label), axis=1)
-        print(result)
+        # print(result)
 
         # Output the result to excel
-        rel_path = '..\\Data\\Labeling\\C/Refactor_' + key + '_' + str(i) + '.xlsx'
+        rel_path = '..\\Data\\Labeling\\C\\Refactor_' + key + '_' + str(i) + '.xlsx'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-        print('abs_path', abs_path)
-        writer = pd.ExcelWriter(abs_path, engine='xlsxwriter')
+        # print('abs_path', abs_path)
+        # writer = pd.ExcelWriter(abs_path)
 
-        # writer = pd.ExcelWriter('aaa.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter('Refactor_' + key + '_' + str(i) + '.xlsx', engine='xlsxwriter')
         result.to_excel(writer, sheet_name='Labeling_Data', index=False)
-        print('<---Output to the excel Successfully---->')
-    x=input()
+        writer.save()
+    print('<---Output to the excel Successfully---->')
