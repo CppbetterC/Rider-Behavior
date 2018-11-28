@@ -123,7 +123,7 @@ def train_local_fnn(nn, algorithm):
     all_nn_accuracy = np.array([])
 
     # Load file FNN_Train_data_' + str(num) + '.xlsx
-    org_data, org_label = LoadData.get_fnn_training_data(nn)
+    org_data, org_label = LoadData.get_method1_fnn_train(nn)
     org_label = np.array([1 if element == nn else -1 for element in org_label])
 
     # Reduce dimension and generate train/test data
@@ -245,7 +245,7 @@ Train NN with DNN
 def train_local_dnn(nn):
     # Train the DNN
     print('<---Train the DNN' + str(nn) + ' Start--->')
-    org_data, org_label = LoadData.get_fnn_training_data(nn)
+    org_data, org_label = LoadData.get_method1_fnn_train(nn)
     org_label = np.array([[1, 0] if element == nn else [0, 1] for element in org_label])
     print(org_label)
 

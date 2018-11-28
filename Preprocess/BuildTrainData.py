@@ -149,7 +149,7 @@ if method == '1':
     header = ['Dim' + str(i) for i in range(1, 265, 1)]
     np_data, np_label = (np.array([]) for _ in range(2))
     for nn in range(1, 7, 1):
-        org_data, org_label = LoadData.get_fnn_training_data(nn)
+        org_data, org_label = LoadData.get_method1_fnn_train(nn)
         if nn == 1:
             np_data = org_data
             np_label = org_label

@@ -16,6 +16,6 @@
 # Step4, use the Preprocess/RefactorOriginalData.py to refactor
 # The file from C1_Original_data.xlsx to C6_Original_data.xlsx
 # Step5, use the Preprocess/BulidTrainData.py to generate the FNN　training data
-# Step6, use Main.py to predict the label by fnn
+# Step6, use Main4.py to predict the label by fnn
 
 

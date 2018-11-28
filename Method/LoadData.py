@@ -101,7 +101,7 @@ class LoadData:
         return self.sensor_dim
 
     @staticmethod
-    def get_test_data():
+    def get_method1_test():
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
         path_name = '../Data/Labeling/C/Original_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
@@ -112,20 +112,40 @@ class LoadData:
         return data, labels_new
 
     @staticmethod
-    def get_fnn_training_data(num):
+    def get_method2_test():
+        header = ['Dim' + str(i) for i in range(1, 4, 1)]
+        path_name = '../Data/Labeling/C/method2/Test_data.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        data = excel_data.loc[:, header].values
+        labels = excel_data.loc[:, ['Label']].values.ravel()
+        return data, labels
+
+    @staticmethod
+    def get_method1_fnn_train(num):
         """
         Read the FNN_Train_data as np_data.
         :param num: label_num (C1~C6)
         :return: np_data, np_label
         """
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
-        path_name = '../Data/Labeling/C/FNN_Train_data_' + str(num) + '.xlsx'
+        path_name = '../Data/Labeling/C/method1/FNN_Train_data_' + num + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         data = excel_data.loc[:, header].values
         labels = excel_data.loc[:, ['Label']].values.ravel()
         labels_new = np.array([int(e[1]) for e in labels])
         return data, labels_new
+
+    @staticmethod
+    def get_method2_fnn_train(num):
+        header = ['Dim' + str(i) for i in range(1, 4, 1)]
+        path_name = '../Data/Labeling/C/method2/FNN_Train_data_' + num + '.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        data = excel_data.loc[:, header].values
+        labels = excel_data.loc[:, ['Label']].values.ravel()
+        return data, labels
 
     @staticmethod
     def get_lnn_training_data():

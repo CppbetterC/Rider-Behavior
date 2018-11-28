@@ -166,7 +166,7 @@ def train_local_fnn(nn, algorithm):
     all_nn_accuracy = np.array([])
 
     # Load file FNN_Train_data_' + str(num) + '.xlsx
-    org_data, org_label = LoadData.get_fnn_training_data(nn)
+    org_data, org_label = LoadData.get_method1_fnn_train(nn)
     org_label = np.array([1 if element == nn else 0 for element in org_label])
 
     # Reduce dimension and generate train/test data
@@ -489,7 +489,7 @@ Test all model
 
 def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     # Load file, Original_data.xlsx
-    org_data, org_label = LoadData.get_test_data()
+    org_data, org_label = LoadData.get_method1_test()
 
     # Reduce dimension and generate train/test data
     reduced_data = reduce_dimension(org_data, org_label, algorithm)

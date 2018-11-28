@@ -40,7 +40,7 @@ dimension = 3
 for algorithm in reduced_algorithm:
     for nn in range(1, 7, 1):
         # Read file LNN_Train_data.xlsx'
-        org_data, org_label = LoadData.get_fnn_training_data(nn)
+        org_data, org_label = LoadData.get_method1_fnn_train(nn)
 
         reduced_data = np.array([])
         # Dimension Reduce
