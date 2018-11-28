@@ -92,28 +92,6 @@ class SeparateDataSet:
                     else:
                         array = np.concatenate((array, element.reshape(-1, 3)), axis=0)
             array_dict[i] = array
-        # print('array_dict', array_dict)
-
-        # """
-        # Check print the result or not
-        # """
-        # if output == 'y' or 'yes':
-        #     header = ['Dim' + str(i) for i in range(1, 4, 1)]
-        #     for i in range(len(array_dict)):
-        #         pd_data = pd.DataFrame(array_dict[i], columns=header)
-        #         tmp_label = \
-        #             np.array([label_type+'_'+str(i) for _ in range(len(array_dict[i]))]).reshape(-1, 1)
-        #         pd_label = pd.DataFrame(tmp_label, columns=['Label'])
-        #         result = pd.concat((pd_data, pd_label), axis=1)
-        #         print(result)
-        #
-        #         # Output the result to excel
-        #         rel_path = '../Data/Labeling/C/Refactor_' + label_type + '_' + str(i) + '.xlsx'
-        #         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-        #         print('abs_path', abs_path)
-        #         writer = pd.ExcelWriter(abs_path, engine='xlsxwriter')
-        #         result.to_excel(writer, sheet_name='Labeling_Data', index=False)
-        #         print('<---Output to the excel Successfully---->')
 
         # Make Scatter Graph
         fig = plt.figure(figsize=(8, 6), dpi=100)
@@ -155,9 +133,6 @@ print('<---2. Use the calculate_by_deviation to evaluate--->')
 print('<---3. Use the silhouette_score to evaluate--->')
 print('<---4. Show Cluster Scatter--->')
 method = input('<---Please Choose--->: ')
-# output_excel = 'n'
-# if method == '4':
-#     output_excel = input('<---Output Excel?(y/n)--->: ')
 
 for i in range(1, 7, 1):
     # Load data and reduced the dimension

@@ -21,6 +21,8 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from Method.LoadData import LoadData
+from Method.Normalize import Normalize
+from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
 cluster_num = {'C1': 2,
                'C2': 3,
@@ -28,32 +30,42 @@ cluster_num = {'C1': 2,
                'C4': 4,
                'C5': 0,
                'C6': 0}
+dim = 3
 
 for key, values in cluster_num.items():
     # Load data and reduced the dimension
     org_data, org_label = LoadData.get_split_original_data(key[1])
+
+    # Dimension Reduced
+    reduced_data = ra.tsne(org_data, dim)
+
+    # Normalized data
+    normalized_data = Normalize.normalization(reduced_data)
+
     if values == 0:
         continue
-    kmeans = KMeans(n_clusters=values, random_state=0).fit(org_data)
+    kmeans = KMeans(n_clusters=values, random_state=0).fit(normalized_data)
     cluster_label = kmeans.labels_
     # print('kmeans', kmeans)
     # print('cluster_label', cluster_label)
     # print('cluster_length', set(cluster_label))
     # print(org_data)
-    # print(org_data.shape)
+    # print(normalized_data.shape)
 
     array_dict = {}
     for j in range(len(set(cluster_label))):
         array = np.array([])
-        for element, label in zip(org_data, cluster_label):
+        for element, label in zip(normalized_data, cluster_label):
             if label == j:
                 if len(array) == 0:
-                    array = element.reshape(-1, 3)
+                    array = element.reshape(-1, dim)
                 else:
-                    array = np.concatenate((array, element.reshape(-1, 3)), axis=0)
+                    array = np.concatenate((array, element.reshape(-1, dim)), axis=0)
+        # print('array', j, array.shape)
         array_dict[j] = array
     # print('array_dict', array_dict)
     print('<---' + key + ' Successfully--->')
+
 
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     for i in range(len(array_dict)):
@@ -74,3 +86,4 @@ for key, values in cluster_num.items():
         result.to_excel(writer, sheet_name='Labeling_Data', index=False)
         writer.save()
     print('<---Output to the excel Successfully---->')
+

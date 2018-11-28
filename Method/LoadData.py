@@ -177,3 +177,13 @@ class LoadData:
         labels = excel_data.loc[:, ['Label']].values.ravel()
         labels_new = np.array([int(e[1]) for e in labels])
         return data, labels_new
+
+    @staticmethod
+    def get_refactor_data(label, num):
+        header = ['Dim' + str(i) for i in range(1, 4, 1)]
+        path_name = '../Data/RefactorData/Refactor_' + label + '_' + str(num) + '.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        data = excel_data.loc[:, header].values
+        labels = excel_data.loc[:, ['Label']].values.ravel()
+        return data, labels

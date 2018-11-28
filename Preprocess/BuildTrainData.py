@@ -4,6 +4,8 @@ import os
 
 from Method.LoadData import LoadData
 from Method.SVMSMOTE import SVMSMOTE
+from Method.Normalize import Normalize
+from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
 """
 # Load the file to split as train/test data
@@ -69,38 +71,86 @@ def build_train_data(org_data, nn_label):
     return result
 
 
-# 讀原始的資料集(264維度)
-# 產生用於訓練的資料集
-# 給FNN1 ~ FNN6
-org_data = LoadData.get_org_data()
-for nn in range(1, 7, 1):
-    data = build_train_data(org_data, nn)
-    path_name = '../Data/Labeling/C/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+#####################################################
+print('<---Choose how to bulid trian data--->')
+print('1. Build by OriginalData.xlsx')
+print('2. Bulid by RefactorData.xlsx')
+method = input('<---Please Choose--->: ')
+
+if method == '1':
+    # 讀原始的資料集(264維度)
+    # 產生用於訓練的資料集
+    # 給FNN1 ~ FNN6
+    org_data = LoadData.get_org_data()
+    for nn in range(1, 7, 1):
+        data = build_train_data(org_data, nn)
+        path_name = '../Data/Labeling/C/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
+        data.to_excel(writer, sheet_name='Labeling_Data', index=False)
+        writer.save()
+
+    # 最後輸出一份包含所有的資料集用在 Label NN
+    header = ['Dim' + str(i) for i in range(1, 265, 1)]
+    np_data, np_label = (np.array([]) for _ in range(2))
+    for nn in range(1, 7, 1):
+        org_data, org_label = LoadData.get_fnn_training_data(nn)
+        if nn == 1:
+            np_data = org_data
+            np_label = org_label
+        else:
+            np_data = np.concatenate([np_data, org_data], axis=0)
+            np_label = np.concatenate([np_label, org_label], axis=0)
+
+    pd_data = pd.DataFrame(np_data, columns=header)
+    pd_label = pd.DataFrame(np_label, columns=['Label'])
+    result = pd.concat([pd_data, pd_label], axis=1)
+    print(result)
+
+    path_name = '../Data/Labeling/C/LNN_Train_data.xlsx'
     path_name = os.path.join(os.path.dirname(__file__), path_name)
     writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
-    data.to_excel(writer, sheet_name='Labeling_Data', index=False)
+    result.to_excel(writer, sheet_name='Labeling_Data', index=False)
     writer.save()
 
+elif method == '2':
+    dim = 3
+    all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
+    cluster_num = {'C1': 2, 'C2': 3, 'C3': 2, 'C4': 4, 'C5': 0, 'C6': 0}
 
-# 最後輸出一份包含所有的資料集用在 Label NN
-header = ['Dim' + str(i) for i in range(1, 265, 1)]
-np_data, np_label = (np.array([]) for _ in range(2))
-for nn in range(1, 7, 1):
-    org_data, org_label = LoadData.get_fnn_training_data(nn)
-    if nn == 1:
-        np_data = org_data
-        np_label = org_label
-    else:
-        np_data = np.concatenate([np_data, org_data], axis=0)
-        np_label = np.concatenate([np_label, org_label], axis=0)
+    header = ['Dim1', 'Dim2', 'Dim3', 'Label']
+    pd_data = pd.DataFrame()
+    np_data = np.array([])
 
-pd_data = pd.DataFrame(np_data, columns=header)
-pd_label = pd.DataFrame(np_label, columns=['Label'])
-result = pd.concat([pd_data, pd_label], axis=1)
-print(result)
+    for element in all_label:
+        if cluster_num[element] == 0:
+            # 讀檔, 降維, 正規化
+            org_data, org_label = LoadData.get_split_original_data(element[1])
+            org_label = np.array(['C'+str(i) for i in org_label])
+            reduced_data = ra.tsne(org_data, dim)
+            normalized_data = Normalize.normalization(reduced_data)
+            np_tmp = np.concatenate((normalized_data, org_label.reshape(-1, 1)), axis=1)
+            pd_tmp = pd.DataFrame(np_tmp, columns=header)
+            pd_data = pd.concat((pd_data, pd_tmp), axis=0)
 
-path_name = '../Data/Labeling/C/LNN_Train_data.xlsx'
-path_name = os.path.join(os.path.dirname(__file__), path_name)
-writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
-result.to_excel(writer, sheet_name='Labeling_Data', index=False)
-writer.save()
+        else:
+            for num in range(cluster_num[element]):
+                normalized_data, org_label = LoadData.get_refactor_data(element, num)
+                # print(normalized_data, normalized_data.shape)
+                # print(org_label, org_label.shape)
+                # print(org_label.shape)
+                np_tmp = np.concatenate((normalized_data, org_label.reshape(-1, 1)), axis=1)
+                pd_tmp = pd.DataFrame(np_tmp, columns=header)
+                pd_data = pd.concat((pd_data, pd_tmp), axis=0)
+
+    print(pd_data)
+    for nn in range(1, 7, 1):
+        data = build_train_data(pd_data, nn)
+        path_name = '../Data/FNNTrainData/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
+        data.to_excel(writer, sheet_name='Labeling_Data', index=False)
+        writer.save()
+
+else:
+    print('<---Error choose--->')
