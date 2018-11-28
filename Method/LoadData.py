@@ -113,6 +113,11 @@ class LoadData:
 
     @staticmethod
     def get_fnn_training_data(num):
+        """
+        Read the FNN_Train_data as np_data.
+        :param num: label_num (C1~C6)
+        :return: np_data, np_label
+        """
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
         path_name = '../Data/Labeling/C/FNN_Train_data_' + str(num) + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
@@ -124,6 +129,7 @@ class LoadData:
 
     @staticmethod
     def get_lnn_training_data():
+        """Read the LNN_Train_data as np_data."""
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
         path_name = '../Data/Labeling/C/LNN_Train_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
@@ -134,6 +140,7 @@ class LoadData:
 
     @staticmethod
     def get_org_data():
+        """Read the Original_data as DataFrame."""
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
         header.append('Label')
         path_name = '../Data/Labeling/C/Original_data.xlsx'
@@ -144,6 +151,7 @@ class LoadData:
 
     @staticmethod
     def get_original_excel(label_type, file):
+        """Read the 0.74.xlsx as np_array."""
         path_name = '../Data/Labeling/' + label_type + '/' + file + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
@@ -156,6 +164,7 @@ class LoadData:
 
     @staticmethod
     def get_split_data():
+        """Read the Split_data as np_array."""
         path_name = '../Data/Labeling/C/Split_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
@@ -168,9 +177,14 @@ class LoadData:
 
     @staticmethod
     def get_split_original_data(num):
+        """
+        Read the C1_Original_data as the np_array
+        :param num: label_num (C1~C6)
+        :return: np_data, np_label
+        """
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
         # header.append('Label')
-        path_name = '../Data/Labeling/C/Split_C'+str(num)+'Original_data.xlsx'
+        path_name = '../Data/Labeling/C/method2/C'+str(num)+'_Original_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         data = excel_data.loc[:, header].values
@@ -180,8 +194,14 @@ class LoadData:
 
     @staticmethod
     def get_refactor_data(label, num):
+        """
+        Read the C1_Refactor_data.xlsx as np_array
+        :param label: label_num (C1~C6)
+        :param num: according the cluster num
+        :return: np_data, np_label
+        """
         header = ['Dim' + str(i) for i in range(1, 4, 1)]
-        path_name = '../Data/RefactorData/Refactor_' + label + '_' + str(num) + '.xlsx'
+        path_name = '../Data/Labeling/C/method2/'+label+'_'+str(num)+'_Refactor_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         data = excel_data.loc[:, header].values

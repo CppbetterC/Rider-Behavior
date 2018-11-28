@@ -1,3 +1,31 @@
+"""
+Method1
+# Load the file to split as train/test data
+# 選擇該類神經需要的資料集
+# 例如C1, 從原始資料集抓 C1~C6
+# 比重是 0.5, 0.1, 0.1, 0.1, 0.1, 0.1
+# 參數數量取 500, 100, 100, 100, 100, 100
+# tt 是取0.5比重的那個資料集
+# t1, t2, t3, t4, t5 各取0.1比重的資料集
+
+Method 2
+# Load the file from Refactor/Refactor_C1_1.xlsx
+# 目前的種類有
+# C1_0 1018
+# C1_1 1076
+# C2_0 2485
+# C2_1 2659
+# C2_2 2422
+# C3_0 945
+# C3_1 1112
+# C4_0 349
+# C4_1 400
+# C4_2 277
+# C4_3 112
+# C5   224
+# C6   45
+"""
+
 import numpy as np
 import pandas as pd
 import os
@@ -7,18 +35,8 @@ from Method.SVMSMOTE import SVMSMOTE
 from Method.Normalize import Normalize
 from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
-"""
-# Load the file to split as train/test data
-# 選擇該類神經需要的資料集
-# 例如C1, 從原始資料集抓 C1~C6
-# 比重是 0.5, 0.1, 0.1, 0.1, 0.1, 0.1
-# 參數數量取 500, 100, 100, 100, 100, 100
-# tt 是取0.5比重的那個資料集
-# t1, t2, t3, t4, t5 各取0.1比重的資料集
-"""
 
-
-def build_train_data(org_data, nn_label):
+def build_from_original(org_data, nn_label):
     # big_num 是0.5比重的那個資料集的數量
     # small_num 是0.1比重的那個資料集的數量
     big_num, small_num = 2000, 400
@@ -71,6 +89,42 @@ def build_train_data(org_data, nn_label):
     return result
 
 
+def build_from_refactor(org_data, nn_label, nn_category):
+    big_num, small_num = 3000, 250
+    header = ['Dim' + str(i) for i in range(1, 4, 1)]
+    tmp = org_data.loc[org_data['Label'] == nn_label, header].values.astype('float64')
+    if len(tmp) < big_num:
+        svm = SVMSMOTE(tmp)
+        tmp = svm.balance_data(big_num)
+    else:
+        while len(tmp) > big_num:
+            idx = np.random.randint(0, len(tmp)-1)
+            tmp = np.delete(tmp, idx, 0)
+
+    pd_data = pd.DataFrame(tmp, columns=header)
+    pd_label = pd.DataFrame(np.array([nn_label for _ in range(len(tmp))]), columns=['Label'])
+    result = pd.concat([pd_data, pd_label], axis=1)
+
+    for label in list(set(nn_category) - {nn_label}):
+        # print("label is ", label)
+        tmp = org_data.loc[org_data['Label'] == label, header].values.astype('float64')
+        if len(tmp) < small_num:
+            svm = SVMSMOTE(tmp)
+            tmp = svm.balance_data(small_num)
+        else:
+            while len(tmp) > small_num:
+                idx = np.random.randint(0, len(tmp) - 1)
+                tmp = np.delete(tmp, idx, 0)
+
+        pd_data = pd.DataFrame(tmp, columns=header)
+        pd_label = pd.DataFrame(np.array([label for _ in range(len(tmp))]), columns=['Label'])
+        tmp_result = pd.concat([pd_data, pd_label], axis=1)
+        result = pd.concat([result, tmp_result], axis=0)
+    print('--------------------------------------')
+    print('result', result)
+    return result
+
+
 #####################################################
 print('<---Choose how to bulid trian data--->')
 print('1. Build by OriginalData.xlsx')
@@ -82,8 +136,9 @@ if method == '1':
     # 產生用於訓練的資料集
     # 給FNN1 ~ FNN6
     org_data = LoadData.get_org_data()
+    print(org_data)
     for nn in range(1, 7, 1):
-        data = build_train_data(org_data, nn)
+        data = build_from_original(org_data, nn)
         path_name = '../Data/Labeling/C/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
@@ -121,20 +176,23 @@ elif method == '2':
     header = ['Dim1', 'Dim2', 'Dim3', 'Label']
     pd_data = pd.DataFrame()
     np_data = np.array([])
+    nn_category = np.array([])
 
     for element in all_label:
         if cluster_num[element] == 0:
+            nn_category = np.append(nn_category, element)
             # 讀檔, 降維, 正規化
             org_data, org_label = LoadData.get_split_original_data(element[1])
             org_label = np.array(['C'+str(i) for i in org_label])
             reduced_data = ra.tsne(org_data, dim)
-            normalized_data = Normalize.normalization(reduced_data)
+            normalized_data = Normalize.normalization(reduced_data).astype('float64')
             np_tmp = np.concatenate((normalized_data, org_label.reshape(-1, 1)), axis=1)
             pd_tmp = pd.DataFrame(np_tmp, columns=header)
             pd_data = pd.concat((pd_data, pd_tmp), axis=0)
 
         else:
             for num in range(cluster_num[element]):
+                nn_category = np.append(nn_category, element+'_'+str(num))
                 normalized_data, org_label = LoadData.get_refactor_data(element, num)
                 # print(normalized_data, normalized_data.shape)
                 # print(org_label, org_label.shape)
@@ -142,11 +200,12 @@ elif method == '2':
                 np_tmp = np.concatenate((normalized_data, org_label.reshape(-1, 1)), axis=1)
                 pd_tmp = pd.DataFrame(np_tmp, columns=header)
                 pd_data = pd.concat((pd_data, pd_tmp), axis=0)
-
     print(pd_data)
-    for nn in range(1, 7, 1):
-        data = build_train_data(pd_data, nn)
-        path_name = '../Data/FNNTrainData/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+
+    print('nn_category', nn_category)
+    for nn in nn_category:
+        data = build_from_refactor(pd_data, nn, nn_category)
+        path_name = '../Data/Labeling/C/method2/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
         data.to_excel(writer, sheet_name='Labeling_Data', index=False)

@@ -24,16 +24,14 @@ from Method.LoadData import LoadData
 from Method.Normalize import Normalize
 from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
-cluster_num = {'C1': 2,
-               'C2': 3,
-               'C3': 2,
-               'C4': 4,
-               'C5': 0,
-               'C6': 0}
+cluster_num = {'C1': 2, 'C2': 3, 'C3': 2, 'C4': 4, 'C5': 0, 'C6': 0}
 dim = 3
 
 for key, values in cluster_num.items():
+    if values == 0:
+        continue
     # Load data and reduced the dimension
+    print('<---' + key + ' Start--->')
     org_data, org_label = LoadData.get_split_original_data(key[1])
 
     # Dimension Reduced
@@ -42,8 +40,6 @@ for key, values in cluster_num.items():
     # Normalized data
     normalized_data = Normalize.normalization(reduced_data)
 
-    if values == 0:
-        continue
     kmeans = KMeans(n_clusters=values, random_state=0).fit(normalized_data)
     cluster_label = kmeans.labels_
     # print('kmeans', kmeans)
@@ -66,7 +62,6 @@ for key, values in cluster_num.items():
     # print('array_dict', array_dict)
     print('<---' + key + ' Successfully--->')
 
-
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     for i in range(len(array_dict)):
         pd_data = pd.DataFrame(array_dict[i], columns=header)
@@ -77,12 +72,9 @@ for key, values in cluster_num.items():
         # print(result)
 
         # Output the result to excel
-        rel_path = '..\\Data\\Labeling\\C\\Refactor_' + key + '_' + str(i) + '.xlsx'
+        rel_path = '..\\Data\\Labeling\\C\\method2\\'+key+'_'+str(i)+'_Refactor_data.xlsx'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-        # print('abs_path', abs_path)
-        # writer = pd.ExcelWriter(abs_path)
-
-        writer = pd.ExcelWriter('Refactor_' + key + '_' + str(i) + '.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter(abs_path, engine='xlsxwriter')
         result.to_excel(writer, sheet_name='Labeling_Data', index=False)
         writer.save()
     print('<---Output to the excel Successfully---->')
