@@ -26,8 +26,8 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_epoch = 1
-fnn_random_size = 1
+fnn_epoch = 5
+fnn_random_size = 100
 
 fnn_threshold = 0.0
 
