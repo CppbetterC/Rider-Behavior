@@ -24,8 +24,11 @@ from Method.LoadData import LoadData
 from Method.Normalize import Normalize
 from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
-cluster_num = {'C1': 2, 'C2': 3, 'C3': 2, 'C4': 4, 'C5': 0, 'C6': 0}
+# Dimension Reduced algorithm is tSNE
+# 這邊可以調整C1~C6每個要再細分成幾類
+cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
 dim = 3
+
 
 for key, values in cluster_num.items():
     if values == 0:

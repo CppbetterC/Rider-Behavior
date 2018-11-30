@@ -11,19 +11,12 @@ Method1
 Method 2
 # Load the file from Refactor/Refactor_C1_1.xlsx
 # 目前的種類有
-# C1_0 1018
-# C1_1 1076
-# C2_0 2485
-# C2_1 2659
-# C2_2 2422
-# C3_0 945
-# C3_1 1112
-# C4_0 349
-# C4_1 400
-# C4_2 277
-# C4_3 112
-# C5   224
-# C6   45
+C1_0 255, C1_1 543, C1_2 263, C1_3 459, C1_4 343, C1_5 231
+C2_0 1327, C2_1 946, C2_2 707, C2_3 930, C2_4 1137, C2_5 1322, C2_6 1197
+C3_0 414, C3_1 312, C3_2 205, C3_3 320, C3_4 173, C3_5 348, C3_6 285
+C4_0 410, C4_1 157, C4_2 142, C4_3 429
+C5_0 70, C5_1 82, C5_2 72
+C6   45
 """
 
 import numpy as np
@@ -90,7 +83,7 @@ def build_from_original(org_data, nn_label):
 
 
 def build_from_refactor(org_data, nn_label, nn_category):
-    big_num, small_num = 3000, 250
+    big_num, small_num = 1000, 40
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     tmp = org_data.loc[org_data['Label'] == nn_label, header].values.astype('float64')
     if len(tmp) < big_num:
@@ -171,7 +164,7 @@ if method == '1':
 elif method == '2':
     dim = 3
     all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-    cluster_num = {'C1': 2, 'C2': 3, 'C3': 2, 'C4': 4, 'C5': 0, 'C6': 0}
+    cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
 
     header = ['Dim1', 'Dim2', 'Dim3', 'Label']
     pd_data = pd.DataFrame()

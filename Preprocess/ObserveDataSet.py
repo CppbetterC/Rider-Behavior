@@ -109,9 +109,9 @@ class SeparateDataSet:
             ax.scatter(tmp[0], tmp[1], tmp[2], marker='o', cmap=cmap)
         plt.savefig("..\\Experiment\\ClusterScore\\"
                     "Data scatter with cluster_" + str(num) + '(' + label_type + ')' + ".png")
-        # plt.show()
-        plt.ion()
-        plt.pause(3)
+        plt.show()
+        # plt.ion()
+        # plt.pause(3)
         plt.close()
 
 

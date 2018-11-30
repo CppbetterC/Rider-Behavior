@@ -18,7 +18,7 @@ algorithm = 'tSNE'
 dimension = 3
 
 all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-cluster_num = {'C1': 2, 'C2': 3, 'C3': 2, 'C4': 4, 'C5': 0, 'C6': 0}
+cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
 nn_category = np.array([])
 for element in all_label:
     if cluster_num[element] == 0:

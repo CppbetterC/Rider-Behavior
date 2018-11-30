@@ -26,10 +26,10 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_epoch = 2
+fnn_epoch = 5
 fnn_random_size = 100
 
-fnn_threshold = 0.0
+fnn_threshold = -0.1
 
 # dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap', 'NCA, 'tSNE']
 dimension_reduce_algorithm = ['tSNE']
@@ -88,53 +88,26 @@ def train_fnn(nn):
 
     return fnn_copy, accuracy, matrix
 
-# FNN 對照索引值
-# C1_0 1
-# C1_1 2
-# C2_0 3
-# C2_1 4
-# C2_2 5
-# C3_0 6
-# C3_1 7
-# C4_0 8
-# C4_1 9
-# C4_2 10
-# C4_3 11
-# C5   12
-# C6   13
+
+# 產生hash table
+def build_hash_table():
+    dictionary = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+    index = 1
+    hash_table = {}
+    for key, value in dictionary.items():
+        if value == 0:
+           hash_table[key] = index
+        for i in range(value):
+            hash_table[key+'_'+str(i)] = index
+            index += 1
+    print('hash_table', hash_table)
+    return hash_table
 
 
-def label_convert(data):
+def label_convert(data, hash_table):
     result = np.array([])
     for label in data:
-        if label == 'C1_0':
-            result = np.append(result, 1)
-        elif label == 'C1_1':
-            result = np.append(result, 2)
-        elif label == 'C2_0':
-            result = np.append(result, 3)
-        elif label == 'C2_1':
-            result = np.append(result, 4)
-        elif label == 'C2_2':
-            result = np.append(result, 5)
-        elif label == 'C3_0':
-            result = np.append(result, 6)
-        elif label == 'C3_1':
-            result = np.append(result, 7)
-        elif label == 'C4_0':
-            result = np.append(result, 8)
-        elif label == 'C4_1':
-            result = np.append(result, 9)
-        elif label == 'C4_2':
-            result = np.append(result, 10)
-        elif label == 'C4_3':
-            result = np.append(result, 11)
-        elif label == 'C5':
-            result = np.append(result, 12)
-        elif label == 'C6':
-            result = np.append(result, 13)
-        else:
-            print('Error Label')
+        result = np.append(result, hash_table[label])
     return result
 
 
@@ -150,7 +123,7 @@ def test_model(fnn_model):
         output = fnn.testing_model(X_test)
         output_list = np.append(output_list, output)
 
-    y_label = label_convert(y_test)
+    y_label = label_convert(y_test, build_hash_table())
     output_list = output_list.reshape(-1, len(fnn_model))
     output_list = Normalize.normalization(output_list)
     label_pred = LabelNN.label_encode(output_list)
@@ -169,30 +142,13 @@ def test_model(fnn_model):
     return C_accuracy
 
 
-# def show_model(mean, stddev, weight):
-#     data = np.array([])
-#     output = np.array([])
-#     for i in range(-10, 10, 1):
-#         for j in range(-10, 10, 1):
-#             for k in range(-10, 10, 1):
-#                 tmp = np.append(data, np.array([i, j, k]))
-#     data = data.reshape(1, -1, 3) / 10
-#     fnn = FNN(
-#         fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size,
-#         mean, stddev, weight, fnn_lr, 1)
-#
-#     for element in data:
-#         output = np.append(output, fnn.forward(element))
-#     ModelScatter.output_scatter_3d(data, output, fnn_threshold)
-
-
 if __name__ == '__main__':
 
     start = time.time()
     print('<---Train--->')
 
     all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-    cluster_num = {'C1': 2, 'C2': 3, 'C3': 2, 'C4': 4, 'C5': 0, 'C6': 0}
+    cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
     nn_category = np.array([])
     for element in all_label:
         if cluster_num[element] == 0:
