@@ -26,10 +26,10 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_epoch = 5
-fnn_random_size = 100
+fnn_epoch = 1
+fnn_random_size = 1
 
-fnn_threshold = -0.1
+fnn_threshold = 0.0
 
 # dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap', 'NCA, 'tSNE']
 dimension_reduce_algorithm = ['tSNE']
@@ -75,16 +75,16 @@ def train_fnn(nn):
     print('<---Train the FNN ' + nn + ' Successfully--->')
     print('<----------------------------------------------->')
 
-    rel_path = 'Experiment/Graph/method2/Best_FNN_' + nn + '_error_trend.png'
-    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    ErrorPlot.error_trend(
-        'Best_FNN_' + str(nn) + '_error_trend', len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
+    # rel_path = 'Experiment/Graph/method2/Best_FNN_' + nn + '_error_trend.png'
+    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    # ErrorPlot.error_trend(
+    #     'Best_FNN_' + str(nn) + '_error_trend', len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
 
-    rel_path = 'Experiment/Graph/method2/Accuracy vs FNN' + str(nn) + '.png'
-    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    AccuracyPlot.build_accuracy_plot(
-        'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
-        all_nn_accuracy, abs_path)
+    # rel_path = 'Experiment/Graph/method2/Accuracy vs FNN' + str(nn) + '.png'
+    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    # AccuracyPlot.build_accuracy_plot(
+    #     'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
+    #     all_nn_accuracy, abs_path)
 
     return fnn_copy, accuracy, matrix
 
@@ -92,7 +92,7 @@ def train_fnn(nn):
 # 產生hash table
 def build_hash_table():
     dictionary = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
-    index = 1
+    index = 0
     hash_table = {}
     for key, value in dictionary.items():
         if value == 0:
@@ -103,17 +103,54 @@ def build_hash_table():
     print('hash_table', hash_table)
     return hash_table
 
+#
+# def label_convert(data, hash_table):
+#     result = np.array([])
+#     for label in data:
+#         result = np.append(result, hash_table[label])
+#     return result
 
-def label_convert(data, hash_table):
+
+# Get a list of keys from dictionary which has the given value
+def getKeysByValue(dictOfElements, valueToFind):
+    listOfKeys = list()
+    listOfItems = dictOfElements.items()
+    for item  in listOfItems:
+        if item[1] == valueToFind:
+            listOfKeys.append(item[0])
+    return listOfKeys[0]
+
+
+# C1_0, C1_1, C2, C3
+# [0.3,  0.1, 0.2, -0.1]
+# 第一輪篩選, 找大於 threshold 的值
+# 剩下 C1_0, C1_1, C2
+#     [0.3,  0.1, 0.2]
+# 第二輪篩選, 找剩下最大的值
+# Result -> C1_0, 0.3 -> C1
+# 最後的 Confusion Matrix 還是 6 類
+def label_encoding(data, hash_table):
     result = np.array([])
-    for label in data:
-        result = np.append(result, hash_table[label])
+    for array in data:
+        filiter1 = np.array([value > fnn_threshold for value in array])
+        filiter2 = np.max(filiter1)
+        idx = 0
+        for i in range(len(filiter1)):
+            if filiter1[i] == filiter2:
+                idx = i
+        key = getKeysByValue(hash_table, idx)
+        # print('key', key, type(key))
+        result = np.append(result, int(key[1:2]))
     return result
 
 
 def test_model(fnn_model):
     org_data, org_label = LoadData.get_method2_test()
     X_train, X_test, y_train, y_test = train_test_split(org_data, org_label, test_size=0.3)
+
+    # Convert y_test(28 category to 6 category)
+    y_test = np.array([int(e[1:2]) for e in y_test])
+
     print('<---Test Model Start--->')
     output_list = np.array([])
     for model in fnn_model:
@@ -123,14 +160,15 @@ def test_model(fnn_model):
         output = fnn.testing_model(X_test)
         output_list = np.append(output_list, output)
 
-    y_label = label_convert(y_test, build_hash_table())
+    # y_label = label_convert(y_test, build_hash_table())
     output_list = output_list.reshape(-1, len(fnn_model))
     output_list = Normalize.normalization(output_list)
-    label_pred = LabelNN.label_encode(output_list)
-    for x, y in zip(output_list, y_label):
+
+    label_pred = label_encoding(output_list, build_hash_table())
+    for x, y in zip(output_list[0:5], y_test[0:5]):
         print(x, ' ', y)
 
-    C_matrix = confusion_matrix(y_label, label_pred)
+    C_matrix = confusion_matrix(y_test, label_pred)
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
 
     print('This is the confusion matrix(test_all_model)\n', C_matrix)
