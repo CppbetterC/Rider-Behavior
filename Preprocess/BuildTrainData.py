@@ -83,7 +83,9 @@ def build_from_original(org_data, nn_label):
 
 
 def build_from_refactor(org_data, nn_label, nn_category):
-    big_num, small_num = 1000, 40
+    # {'C1': 9, 'C2': 5, 'C3': 4, 'C4': 5, 'C5': 5, 'C6': 4}
+    # 注意比例
+    big_num, small_num = 1000, 30
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     tmp = org_data.loc[org_data['Label'] == nn_label, header].values.astype('float64')
     if len(tmp) < big_num:
@@ -164,7 +166,7 @@ if method == '1':
 elif method == '2':
     dim = 3
     all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-    cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+    cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
 
     header = ['Dim1', 'Dim2', 'Dim3', 'Label']
     pd_data = pd.DataFrame()
@@ -197,6 +199,7 @@ elif method == '2':
 
     print('nn_category', nn_category)
     for nn in nn_category:
+        print('nn is', nn)
         data = build_from_refactor(pd_data, nn, nn_category)
         path_name = '../Data/Labeling/C/method2/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)

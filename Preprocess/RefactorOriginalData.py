@@ -26,7 +26,7 @@ from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
 # Dimension Reduced algorithm is tSNE
 # 這邊可以調整C1~C6每個要再細分成幾類
-cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
 dim = 3
 
 

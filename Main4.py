@@ -75,23 +75,23 @@ def train_fnn(nn):
     print('<---Train the FNN ' + nn + ' Successfully--->')
     print('<----------------------------------------------->')
 
-    # rel_path = 'Experiment/Graph/method2/Best_FNN_' + nn + '_error_trend.png'
-    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    # ErrorPlot.error_trend(
-    #     'Best_FNN_' + str(nn) + '_error_trend', len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
+    rel_path = 'Experiment/Graph/method2/Best_FNN_' + nn + '_error_trend.png'
+    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    ErrorPlot.error_trend(
+        'Best_FNN_' + str(nn) + '_error_trend', len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
 
-    # rel_path = 'Experiment/Graph/method2/Accuracy vs FNN' + str(nn) + '.png'
-    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    # AccuracyPlot.build_accuracy_plot(
-    #     'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
-    #     all_nn_accuracy, abs_path)
+    rel_path = 'Experiment/Graph/method2/Accuracy vs FNN' + str(nn) + '.png'
+    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    AccuracyPlot.build_accuracy_plot(
+        'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
+        all_nn_accuracy, abs_path)
 
     return fnn_copy, accuracy, matrix
 
 
 # 產生hash table
 def build_hash_table():
-    dictionary = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+    dictionary = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
     index = 0
     hash_table = {}
     for key, value in dictionary.items():
@@ -121,27 +121,56 @@ def getKeysByValue(dictOfElements, valueToFind):
     return listOfKeys[0]
 
 
-# C1_0, C1_1, C2, C3
-# [0.3,  0.1, 0.2, -0.1]
-# 第一輪篩選, 找大於 threshold 的值
-# 剩下 C1_0, C1_1, C2
-#     [0.3,  0.1, 0.2]
-# 第二輪篩選, 找剩下最大的值
-# Result -> C1_0, 0.3 -> C1
-# 最後的 Confusion Matrix 還是 6 類
+#######
 def label_encoding(data, hash_table):
     result = np.array([])
+
+    table = np.array([0 for _ in range(6)])
+    for key, value in hash_table.items():
+        table[int(key[1:2])-1] += 1
+    # print('table', table)
+
+    # count1 紀錄"只有一個數值大於threshold"的次數
+    # count2 紀錄"有多個數值大於threshold"的次數
+    count = [0 for _ in range(2)]
     for array in data:
-        filiter1 = np.array([value > fnn_threshold for value in array])
-        filiter2 = np.max(filiter1)
-        idx = 0
-        for i in range(len(filiter1)):
-            if filiter1[i] == filiter2:
-                idx = i
-        key = getKeysByValue(hash_table, idx)
-        # print('key', key, type(key))
-        result = np.append(result, int(key[1:2]))
-    return result
+        tmp = []
+
+        # 找誰大於0
+        for i in range(len(array)):
+            if array[i] > fnn_threshold:
+                tmp.append(i)
+        # 錯的
+        if len(tmp) == 0:
+            idx = 2
+
+        # 判斷是否只有1個或多個
+        elif len(tmp) == 1:
+            # print('只有一個數值大於threshold，為: ', tmp)
+            key = getKeysByValue(hash_table, tmp[0])
+            idx = int(key[1:2])
+            count[0] += 1
+            # print('idx-1', idx)
+
+        else:
+            # print('有多個數值大於threshold，為: ', tmp)
+            # 看細分類投票比率
+            record = np.array([0 for _ in range(6)])
+            for e in tmp:
+                key = getKeysByValue(hash_table, e)
+                tt = int(key[1:2])
+                record[tt-1] += 1
+            vector = record/table
+            idx = vector.argmax()+1
+            count[1] += 1
+            # print('vector', vector)
+            # print('record', record)
+            # print('idx-2', idx)
+
+        result = np.append(result, idx)
+        # print('count', count)
+
+    return result, count
 
 
 def test_model(fnn_model):
@@ -162,11 +191,15 @@ def test_model(fnn_model):
 
     # y_label = label_convert(y_test, build_hash_table())
     output_list = output_list.reshape(-1, len(fnn_model))
+
+    # 不再做正規畫了試試
     output_list = Normalize.normalization(output_list)
 
-    label_pred = label_encoding(output_list, build_hash_table())
-    for x, y in zip(output_list[0:5], y_test[0:5]):
-        print(x, ' ', y)
+    label_pred, count = label_encoding(output_list, build_hash_table())
+    cnt = 0
+    for x, y in zip(output_list[0:10], y_test[0:10]):
+        print(x, ' ', y, ' ', label_pred[cnt])
+        cnt += 1
 
     C_matrix = confusion_matrix(y_test, label_pred)
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
@@ -177,7 +210,7 @@ def test_model(fnn_model):
 
     print('<---Test Model Successfully--->')
     print('<----------------------------------------------->')
-    return C_accuracy
+    return C_accuracy, count
 
 
 if __name__ == '__main__':
@@ -186,7 +219,9 @@ if __name__ == '__main__':
     print('<---Train--->')
 
     all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-    cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+    # cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+    # cluster_num = {'C1': 6, 'C2': 5, 'C3': 4, 'C4': 4, 'C5': 5, 'C6': 3}
+    cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
     nn_category = np.array([])
     for element in all_label:
         if cluster_num[element] == 0:
@@ -206,8 +241,9 @@ if __name__ == '__main__':
         fnn_accuracy.append(accuracy)
         fnn_matrix.append(pd.DataFrame(matrix, columns=pd_header, index=pd_header))
 
-    model_accuracy = test_model(fnn_model)
+    model_accuracy, count = test_model(fnn_model)
     print('Model Accuracy', model_accuracy)
+    print('count:', count)
 
     end = time.time()
 

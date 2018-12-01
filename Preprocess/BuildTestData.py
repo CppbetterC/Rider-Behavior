@@ -5,7 +5,7 @@ import pandas as pd
 from Method.LoadData import LoadData
 
 all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
 nn_category = np.array([])
 for element in all_label:
     if cluster_num[element] == 0:
