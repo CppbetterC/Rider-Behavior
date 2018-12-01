@@ -1,9 +1,16 @@
+"""
+觀察類神經，調整 Threshold
+"""
+
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+from sklearn.metrics import confusion_matrix
+
 from Method.LoadData import LoadData
+from MkGraph.ConfusionMatrix import ConfusionMatrix
 from Algorithm.FNN import FNN
 
 all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
@@ -38,6 +45,8 @@ for nn in nn_category:
 
     # Load the test data
     org_data, org_label = LoadData.get_method2_fnn_train(nn)
+    print('org_data.shape', org_data.shape)
+    print('org_label.shape', org_label)
 
     mean = np.asarray(attribute['Mean'])
     stddev = np.asarray(attribute['Stddev'])
@@ -47,6 +56,18 @@ for nn in nn_category:
         fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
 
     output = fnn.testing_model(org_data)
+
+    # 全部訓練資料的 confusion matrix
+    # Hot map
+    rel_path = '../Experiment/Graph/test/CM/CM'+str(nn)+'.png'
+    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    y_test = [1 if label == nn else 0 for label in org_label]
+    y_pred = [1 if value > fnn_threshold else 0 for value in output]
+    # print(y_test)
+    # print(y_pred)
+    cnf_matrix = confusion_matrix(y_test, y_pred)
+    ConfusionMatrix.plot_confusion_matrix(cnf_matrix, abs_path,
+                                          classes=list(set(y_test)), title=nn+' Confusion matrix')
 
     error_input, correct_input = (np.array([]) for _ in range(2))
     for x, y in zip(org_data, output):
@@ -65,7 +86,7 @@ for nn in nn_category:
     # print('len(error_input)', len(error_input))
 
     # Scatter
-    rel_path = '../Experiment/Graph/test/Scatter'+str(nn)+'.png'
+    rel_path = '../Experiment/Graph/test/Scatter/Scatter'+str(nn)+'.png'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     correct_data = correct_input.T
     error_data = error_input.T
@@ -83,7 +104,7 @@ for nn in nn_category:
     plt.show()
 
     # Bar
-    rel_path = '../Experiment/Graph/test/Bar'+str(nn)+'.png'
+    rel_path = '../Experiment/Graph/test/Bar/Bar'+str(nn)+'.png'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     x_axis = ['Up Fnn threshold', 'Down Fnn threshold']
     y_axis = [len(correct_input), len(error_input)]
