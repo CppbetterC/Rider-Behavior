@@ -30,8 +30,8 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_epoch = 5
-fnn_random_size = 100
+fnn_epoch = 1
+fnn_random_size = 1
 
 fnn_threshold = 0.0
 
@@ -76,19 +76,20 @@ def train_fnn(nn):
             fnn_copy = copy.deepcopy(fnn)
             accuracy = copy.deepcopy(C_accuracy)
             matrix = copy.deepcopy(C_matrix)
+            print('swap')
     print('<---Train the FNN ' + nn + ' Successfully--->')
     print('<----------------------------------------------->')
 
-    rel_path = 'Experiment/Graph/method2/Best_FNN_' + nn + '_error_trend.png'
-    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    ErrorPlot.error_trend(
-        'Best_FNN_' + str(nn) + '_error_trend', len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
-
-    rel_path = 'Experiment/Graph/method2/Accuracy vs FNN' + str(nn) + '.png'
-    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    AccuracyPlot.build_accuracy_plot(
-        'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
-        all_nn_accuracy, abs_path)
+    # rel_path = 'Experiment/Graph/method2/Best_FNN_' + nn + '_error_trend.png'
+    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    # ErrorPlot.error_trend(
+    #     'Best_FNN_' + str(nn) + '_error_trend', len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
+    #
+    # rel_path = 'Experiment/Graph/method2/Accuracy vs FNN' + str(nn) + '.png'
+    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    # AccuracyPlot.build_accuracy_plot(
+    #     'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
+    #     all_nn_accuracy, abs_path)
 
     return fnn_copy, accuracy, matrix
 
@@ -167,8 +168,8 @@ def label_encoding(data, hash_table):
             vector = record/table
             idx = vector.argmax()+1
             count[1] += 1
-            # print('vector', vector)
-            # print('record', record)
+            print('record', record)
+            print('vector', vector)
             # print('idx-2', idx)
 
         result = np.append(result, idx)
@@ -208,23 +209,23 @@ def test_model(fnn_model):
     for x, y in zip(y_test, label_pred):
         print('correct', x, '<->', 'predict', y)
 
-
-    C_matrix = confusion_matrix(y_test, label_pred)
+    cnf_matrix = confusion_matrix(y_test, label_pred)
     # 做confusion matrix 的圖
-    ConfusionMatrix.plot_confusion_matrix(C_matrix, classes=[1, 2, 3],
-                          title='Confusion matrix(Final FNN Model)')
+    # plt.figure()
+    # ConfusionMatrix.plot_confusion_matrix(cnf_matrix, classes=list(set(y_test)),
+    #                       title='Confusion matrix(Final FNN Model)')
 
-    C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
+    cnf_accuracy = np.sum(cnf_matrix.diagonal()) / np.sum(cnf_matrix)
 
     print('FinalModel_Accuracy: ', accuracy_score(y_test, label_pred))
 
-    print('This is the confusion matrix(test_all_model)\n', C_matrix)
+    print('This is the confusion matrix(test_all_model)\n', cnf_matrix)
     # print(C_matrix)
     # print(C_accuracy)
 
     print('<---Test Model Successfully--->')
     print('<----------------------------------------------->')
-    return C_accuracy, count
+    return cnf_accuracy, count
 
 
 if __name__ == '__main__':
@@ -260,6 +261,11 @@ if __name__ == '__main__':
 
         fnn_accuracy.append(accuracy)
         fnn_matrix.append(pd.DataFrame(matrix, columns=pd_header, index=pd_header))
+
+    print('fnn_accuracy', fnn_accuracy)
+    for x, y in zip(nn_category, fnn_matrix):
+        print('<----------->')
+        print(x, '\n', y)
 
     model_accuracy, count = test_model(fnn_model)
     print('Model Accuracy', model_accuracy)

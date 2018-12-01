@@ -20,9 +20,7 @@ class ConfusionMatrix:
         else:
             print('Confusion matrix, without normalization')
 
-        print(cm)
-
-        plt.figure(figsize=(8, 6), dpi=100)
+        # print(cm)
         plt.imshow(cm, interpolation='nearest', cmap=cmap)
         plt.title(title)
         plt.colorbar()
