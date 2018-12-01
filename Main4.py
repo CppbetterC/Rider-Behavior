@@ -4,17 +4,21 @@ import copy
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 
 from Method.LoadData import LoadData
 from Method.Normalize import Normalize
+from Method.Export import Export
 from Algorithm.FNN import FNN
 from Algorithm.LabelNN import LabelNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
 from MkGraph.ModelScatter import ModelScatter
+from MkGraph.ConfusionMatrix import ConfusionMatrix
 
 """
 # Fuzzy Neural Networks Structure
@@ -196,13 +200,23 @@ def test_model(fnn_model):
     output_list = Normalize.normalization(output_list)
 
     label_pred, count = label_encoding(output_list, build_hash_table())
-    cnt = 0
-    for x, y in zip(output_list[0:10], y_test[0:10]):
-        print(x, ' ', y, ' ', label_pred[cnt])
-        cnt += 1
+    # cnt = 0
+    # for x, y in zip(output_list[0:10], y_test[0:10]):
+    #     print(x, ' ', y, ' ', label_pred[cnt])
+    #     cnt += 1
+
+    for x, y in zip(y_test, label_pred):
+        print('correct', x, '<->', 'predict', y)
+
 
     C_matrix = confusion_matrix(y_test, label_pred)
+    # 做confusion matrix 的圖
+    ConfusionMatrix.plot_confusion_matrix(C_matrix, classes=[1, 2, 3],
+                          title='Confusion matrix(Final FNN Model)')
+
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
+
+    print('FinalModel_Accuracy: ', accuracy_score(y_test, label_pred))
 
     print('This is the confusion matrix(test_all_model)\n', C_matrix)
     # print(C_matrix)
@@ -238,12 +252,23 @@ if __name__ == '__main__':
     for nn in nn_category:
         fnn, accuracy, matrix = train_fnn(nn)
         fnn_model.append(fnn)
+
+        # 儲存 fnn model as .json
+        rel_path = 'Experiment/Model/FNN/'
+        abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+        Export.save_fnn_weight(nn, fnn, abs_path)
+
         fnn_accuracy.append(accuracy)
         fnn_matrix.append(pd.DataFrame(matrix, columns=pd_header, index=pd_header))
 
     model_accuracy, count = test_model(fnn_model)
     print('Model Accuracy', model_accuracy)
     print('count:', count)
+
+    # 做出統計圖
+    x_axis = ['Only One Choose', 'Not Only One Choose']
+    plt.bar(x_axis, list(count))
+    plt.show()
 
     end = time.time()
 

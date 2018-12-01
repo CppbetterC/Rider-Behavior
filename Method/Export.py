@@ -1,6 +1,8 @@
 import os
 import csv
 import numpy as np
+import codecs
+import json
 import pandas as pd
 
 from openpyxl import Workbook
@@ -203,6 +205,16 @@ class Export:
         df.to_excel(writer, sheet_name='Labeling_Data', index=False)
         writer.save()
 
-
-
-
+    @staticmethod
+    def save_fnn_weight(nn_name, fnn_object, path):
+        """
+        :param fnn_object:
+        :param path:
+        :return:
+        """
+        columns = ['Mean', 'Stddev', 'Weight']
+        data = {columns[0]: fnn_object.mean.tolist(),
+                columns[1]: fnn_object.stddev.tolist(),
+                columns[2]: fnn_object.weight.tolist()}
+        file_path = path + nn_name + '.json'
+        json.dump(data, codecs.open(file_path, 'w', encoding='utf-8'))

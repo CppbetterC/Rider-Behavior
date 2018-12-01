@@ -1,10 +1,13 @@
 import os
+import json
+import codecs
 import numpy as np
 import pandas as pd
 
 from openpyxl import load_workbook
 
 from Method.SensorData import Data
+from Algorithm.FNN import FNN
 
 
 class LoadData:
@@ -227,3 +230,9 @@ class LoadData:
         data = excel_data.loc[:, header].values
         labels = excel_data.loc[:, ['Label']].values.ravel()
         return data, labels
+
+    @staticmethod
+    def load_fnn_weight(path):
+        obj_text = codecs.open(path, 'r', encoding='utf-8').read()
+        data = json.loads(obj_text)
+        return data
