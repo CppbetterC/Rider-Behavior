@@ -35,6 +35,39 @@ fnn_random_size = 1
 
 fnn_threshold = 0.0
 
+"""Threshold"""
+fnn1_threshold = 0.0
+fnn2_threshold = 0.0
+fnn3_threshold = 0.0
+fnn4_threshold = 0.0
+fnn5_threshold = 0.0
+fnn6_threshold = 0.0
+fnn7_threshold = 0.0
+fnn8_threshold = 0.0
+fnn9_threshold = 0.0
+fnn10_threshold = 0.0
+fnn11_threshold = 0.0
+fnn12_threshold = 0.0
+fnn13_threshold = 0.0
+fnn14_threshold = 0.0
+fnn15_threshold = 0.0
+fnn16_threshold = 0.0
+fnn17_threshold = 0.0
+fnn18_threshold = 0.0
+fnn19_threshold = 0.0
+fnn20_threshold = 0.0
+fnn21_threshold = 0.0
+fnn22_threshold = 0.0
+fnn23_threshold = 0.0
+fnn24_threshold = 0.0
+fnn25_threshold = 0.0
+fnn26_threshold = 0.0
+fnn27_threshold = 0.0
+fnn28_threshold = 0.0
+fnn29_threshold = 0.0
+fnn30_threshold = 0.0
+
+
 # dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap', 'NCA, 'tSNE']
 dimension_reduce_algorithm = ['tSNE']
 

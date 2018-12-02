@@ -70,21 +70,23 @@ for nn in nn_category:
     ConfusionMatrix.plot_confusion_matrix(cnf_matrix, abs_path,
                                           classes=list(set(y_test)), title=nn+' Confusion matrix')
 
+    # 找出猜錯的資料集
     error_input, correct_input = (np.array([]) for _ in range(2))
-    for x, y in zip(org_data, output):
-        if y <= fnn_threshold:
+    count = 0
+    for x, y, z in zip(y_test, y_pred, org_data):
+        if x != y:
             if len(error_input) == 0:
-                error_input = x.reshape(-1, 3)
+                error_input = z.reshape(-1, 3)
             else:
-                error_input = np.concatenate((error_input, x.reshape(-1, 3)), axis=0)
+                error_input = np.concatenate((error_input, z.reshape(-1, 3)), axis=0)
         else:
             if len(correct_input) == 0:
-                correct_input = x.reshape(-1, 3)
+                correct_input = z.reshape(-1, 3)
             else:
-                correct_input = np.concatenate((correct_input, x.reshape(-1, 3)), axis=0)
+                correct_input = np.concatenate((correct_input, z.reshape(-1, 3)), axis=0)
 
-    # print('len(correct_input)', len(correct_input))
-    # print('len(error_input)', len(error_input))
+    print('len(correct_input)', len(correct_input))
+    print('len(error_input)', len(error_input))
 
     # Scatter
     rel_path = '../Experiment/Graph/test/Scatter/Scatter'+str(nn)+'.png'
@@ -93,8 +95,8 @@ for nn in nn_category:
     error_data = error_input.T
     fig = plt.figure(figsize=(8, 6), dpi=100)
     ax = Axes3D(fig)
-    ax.scatter(correct_data[0], correct_data[1], correct_data[2], color='b', label='Up Fnn threshold')
-    ax.scatter(error_data[0], error_data[1], error_data[2], color='r', label='Down Fnn threshold')
+    ax.scatter(correct_data[0], correct_data[1], correct_data[2], color='b', label='Correct data')
+    ax.scatter(error_data[0], error_data[1], error_data[2], color='r', label='Error data')
     ax.set_title('Scatter '+str(nn))
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
@@ -112,7 +114,7 @@ for nn in nn_category:
     # Bar
     rel_path = '../Experiment/Graph/test/Bar/Bar'+str(nn)+'.png'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    x_axis = ['Up Fnn threshold', 'Down Fnn threshold']
+    x_axis = ['Correct data length', 'Error data length']
     y_axis = [len(correct_input), len(error_input)]
     plt.title('Scatter '+str(nn))
     plt.bar(x_axis, y_axis)
