@@ -11,14 +11,14 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from Method.LoadData import LoadData
 
-color_list = ['r', 'b', 'g', 'y', 'c', 'k']
+color_list = ['b', 'r', 'g', 'y', 'c', 'k']
 
 # Best -> tSNE
 algorithm = 'tSNE'
 dimension = 3
 
 all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-cluster_num = {'C1': 6, 'C2': 7, 'C3': 7, 'C4': 4, 'C5': 3, 'C6': 0}
+cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
 nn_category = np.array([])
 for element in all_label:
     if cluster_num[element] == 0:
@@ -32,8 +32,8 @@ print('nn_category', nn_category)
 for nn in nn_category:
     # Read file LNN_Train_data.xlsx'
     org_data, org_label = LoadData.get_method2_fnn_train(nn)
-    print('org_data', org_data)
-    print('org_label', org_label)
+    # print('org_data', org_data)
+    # print('org_label', org_label)
 
     data1, data2 = (np.array([]) for _ in range(2))
     for element, stamp in zip(org_data, org_label):
@@ -51,8 +51,8 @@ for nn in nn_category:
     data2 = data2.reshape(-1, 3).T
 
     # Scatter graph
-    ax.scatter(data1[0], data1[1], data1[2], color=color_list[0])
-    ax.scatter(data2[0], data2[1], data2[2], color=color_list[1])
+    ax.scatter(data1[0], data1[1], data1[2], color=color_list[0], label=nn)
+    ax.scatter(data2[0], data2[1], data2[2], color=color_list[1], label='not '+nn)
 
     # Set attribute
     ax.set_xlim(-1, 1)
@@ -61,13 +61,14 @@ for nn in nn_category:
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
-    ax.set_title('NN Scatter3D')
+    ax.set_title('Scatter '+nn+'(tSNE)')
+    ax.legend(loc='lower left')
 
     # Output the graph
     rel_path = '../Experiment/Graph/' + algorithm + '_Graph_FNN' + str(nn) + '_' + '.png'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     plt.savefig(abs_path)
-    plt.show()
-    # plt.ion()
-    # plt.pause(5)
-    # plt.close()
+    # plt.show()
+    plt.ion()
+    plt.pause(3)
+    plt.close()

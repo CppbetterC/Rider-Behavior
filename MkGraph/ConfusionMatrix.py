@@ -37,4 +37,7 @@ class ConfusionMatrix:
         plt.xlabel('Predicted label')
         plt.tight_layout()
         plt.savefig(path)
-        plt.show()
+        # plt.show()
+        plt.ion()
+        plt.pause(3)
+        plt.close()

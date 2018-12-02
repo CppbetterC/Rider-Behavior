@@ -37,6 +37,7 @@ fnn_random_size = 1
 fnn_threshold = 0.0
 
 for nn in nn_category:
+    print('nn ->', nn)
     # Load the json
     rel_path = '../Experiment/Model/FNN/'+str(nn)+'.json'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
@@ -45,8 +46,8 @@ for nn in nn_category:
 
     # Load the test data
     org_data, org_label = LoadData.get_method2_fnn_train(nn)
-    print('org_data.shape', org_data.shape)
-    print('org_label.shape', org_label)
+    # print('org_data.shape', org_data.shape)
+    # print('org_label.shape', org_label)
 
     mean = np.asarray(attribute['Mean'])
     stddev = np.asarray(attribute['Stddev'])
@@ -92,22 +93,31 @@ for nn in nn_category:
     error_data = error_input.T
     fig = plt.figure(figsize=(8, 6), dpi=100)
     ax = Axes3D(fig)
-    ax.scatter(correct_data[0], correct_data[1], correct_data[2], color='b')
-    ax.scatter(error_data[0], error_data[1], error_data[2], color='r')
+    ax.scatter(correct_data[0], correct_data[1], correct_data[2], color='b', label='Up Fnn threshold')
+    ax.scatter(error_data[0], error_data[1], error_data[2], color='r', label='Down Fnn threshold')
+    ax.set_title('Scatter '+str(nn))
     ax.set_xlim(-1, 1)
     ax.set_ylim(-1, 1)
     ax.set_zlim(-1, 1)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
+    ax.legend(loc='lower left')
     plt.savefig(abs_path)
-    plt.show()
+    # plt.show()
+    plt.ion()
+    plt.pause(3)
+    plt.close()
 
     # Bar
     rel_path = '../Experiment/Graph/test/Bar/Bar'+str(nn)+'.png'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     x_axis = ['Up Fnn threshold', 'Down Fnn threshold']
     y_axis = [len(correct_input), len(error_input)]
+    plt.title('Scatter '+str(nn))
     plt.bar(x_axis, y_axis)
     plt.savefig(abs_path)
-    plt.show()
+    # plt.show()
+    plt.ion()
+    plt.pause(3)
+    plt.close()
