@@ -117,24 +117,30 @@ def show_train_history(train_history, train, validation, file_name):
 def label_convert(data):
     result = np.array([])
     for element in data:
-        if element == 'C1':
+        if element == 'C1_0':
             result = np.append(result, 0)
-        elif element == 'C2_0':
+        elif element == 'C1_1':
             result = np.append(result, 1)
-        elif element == 'C2_1':
+        elif element == 'C2_0':
             result = np.append(result, 2)
-        elif element == 'C3_0':
+        elif element == 'C2_1':
             result = np.append(result, 3)
-        elif element == 'C3_1':
+        elif element == 'C3_0':
             result = np.append(result, 4)
-        elif element == 'C4_0':
+        elif element == 'C3_1':
             result = np.append(result, 5)
-        elif element == 'C4_1':
+        elif element == 'C4_0':
             result = np.append(result, 6)
-        elif element == 'C5':
+        elif element == 'C4_1':
             result = np.append(result, 7)
-        elif element == 'C6':
+        elif element == 'C5_0':
             result = np.append(result, 8)
+        elif element == 'C5_1':
+            result = np.append(result, 9)
+        elif element == 'C6_0':
+            result = np.append(result, 10)
+        elif element == 'C6_1':
+            result = np.append(result, 11)
         else:
             print('Error 139')
     return result
@@ -143,17 +149,17 @@ def label_convert(data):
 def prediction_convert(data):
     result = np.array([])
     for num in data:
-        if num < 1:
+        if 0 <= num < 2:
             result = np.append(result, 0)
-        elif 1 <= num < 3:
+        elif 2 <= num < 4:
             result = np.append(result, 1)
-        elif 3 <= num < 5:
+        elif 4 <= num < 6:
             result = np.append(result, 2)
-        elif 5 <= num < 7:
+        elif 6 <= num < 8:
             result = np.append(result, 3)
-        elif num == 7:
+        elif 8 <= num < 10:
             result = np.append(result, 4)
-        elif num == 8:
+        elif 10 <= num < 12:
             result = np.append(result, 5)
         else:
             print('Error 159')
@@ -163,17 +169,17 @@ def onehot_convert(data):
     result = np.array([])
     for element in data:
         num = np.argmax(element)
-        if num < 1:
+        if 0 <= num < 2:
             result = np.append(result, 0)
-        elif 1 <= num < 3:
+        elif 2 <= num < 4:
             result = np.append(result, 1)
-        elif 3 <= num < 5:
+        elif 4 <= num < 6:
             result = np.append(result, 2)
-        elif 5 <= num < 7:
+        elif 6 <= num < 8:
             result = np.append(result, 3)
-        elif num == 7:
+        elif 8 <= num < 10:
             result = np.append(result, 4)
-        elif num == 8:
+        elif 10 <= num < 12:
             result = np.append(result, 5)
         else:
             print('Error 179')
@@ -210,9 +216,9 @@ def train_keras_lnn(nn_array, org_data, org_label, algorithm):
     y_testOneHot = np_utils.to_categorical(y_test)
 
     model = Sequential()
-    model.add(Dense(units=16, input_dim=9))
-    model.add(Dense(16, activation='tanh'))
-    model.add(Dense(units=9, kernel_initializer='normal', activation='softmax'))
+    model.add(Dense(units=32, input_dim=12))
+    model.add(Dense(32, activation='tanh'))
+    model.add(Dense(units=12, kernel_initializer='normal', activation='softmax'))
     adam = optimizers.Adam(lr=0.001)
     model.compile(loss='mean_squared_error', optimizer=adam, metrics=['mse'])
     model.summary()
@@ -252,14 +258,14 @@ if __name__ == '__main__':
         start = time.time()
 
         fnn_accuracy, fnn_matrix = ([] for _ in range(2))
-        nn_category = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
-
+        # nn_category = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
+        nn_category = {'C1': 2, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 2, 'C6': 2}
         print('<---Part1, Train FNN(C1-C6)--->')
 
         for key, value in nn_category.items():
             number = 1 if value == 0 else value
-            print(key,' ', value, ' ', number)
             for num in range(number):
+                print(key, ' ', num, ' ', number)
                 if value == 0:
                     name = str(key)
                 else:
@@ -296,7 +302,9 @@ if __name__ == '__main__':
         # normalized_data = Normalize.normalization(reduced_data)
         # nn_category = [i for i in range(1, 7, 1)]
 
-        nn_array = ['C1', 'C2_0', 'C2_1', 'C3_0', 'C3_1', 'C4_0', 'C4_1', 'C5', 'C6']
+        nn_array = ['C1_0', 'C1_1', 'C2_0', 'C2_1',
+                    'C3_0', 'C3_1', 'C4_0', 'C4_1',
+                    'C5_0', 'C5_1', 'C6_0', 'C6_1']
         train_keras_lnn(nn_array, org_data, org_label, algorithm)
 
         end = time.time()

@@ -18,7 +18,8 @@ algorithm = 'tSNE'
 dimension = 3
 
 all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+# cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+cluster_num = {'C1': 2, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 2, 'C6': 2}
 nn_category = np.array([])
 for element in all_label:
     if cluster_num[element] == 0:
@@ -65,7 +66,7 @@ for nn in nn_category:
     ax.legend(loc='lower left')
 
     # Output the graph
-    rel_path = '../Experiment/Graph/' + algorithm + '_Graph_FNN' + str(nn) + '_' + '.png'
+    rel_path = '../Experiment/Method3/Graph/' + algorithm + '_Graph_FNN' + str(nn) + '_' + '.png'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     plt.savefig(abs_path)
     # plt.show()

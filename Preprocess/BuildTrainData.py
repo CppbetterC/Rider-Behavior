@@ -85,7 +85,7 @@ def build_from_original(org_data, nn_label):
 def build_from_refactor(org_data, nn_label, nn_category):
     # {'C1': 9, 'C2': 5, 'C3': 4, 'C4': 5, 'C5': 5, 'C6': 4}
     # 注意比例
-    big_num, small_num = 1500, 160
+    big_num, small_num = 1500, 125
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     tmp = org_data.loc[org_data['Label'] == nn_label, header].values.astype('float64')
     if len(tmp) < big_num:
@@ -167,7 +167,8 @@ elif method == '2':
     dim = 3
     all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
     # cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
-    cluster_num = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
+    # cluster_num = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
+    cluster_num = {'C1': 2, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 2, 'C6': 2}
     header = ['Dim1', 'Dim2', 'Dim3', 'Label']
     pd_data = pd.DataFrame()
     np_data = np.array([])
