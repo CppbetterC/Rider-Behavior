@@ -216,5 +216,5 @@ class Export:
         data = {columns[0]: fnn_object.mean.tolist(),
                 columns[1]: fnn_object.stddev.tolist(),
                 columns[2]: fnn_object.weight.tolist()}
-        file_path = path + nn_name + '.json'
+        file_path = path + str(nn_name) + '.json'
         json.dump(data, codecs.open(file_path, 'w', encoding='utf-8'))
