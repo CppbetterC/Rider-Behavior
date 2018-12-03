@@ -132,7 +132,7 @@ class LoadData:
         :return: np_data, np_label
         """
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
-        path_name = '../Data/Labeling/C/method1/FNN_Train_data_' + num + '.xlsx'
+        path_name = '../Data/Labeling/C/method1/FNN_Train_data_'+str(num)+'.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         data = excel_data.loc[:, header].values
@@ -154,7 +154,7 @@ class LoadData:
     def get_lnn_training_data():
         """Read the LNN_Train_data as np_data."""
         header = ['Dim' + str(i) for i in range(1, 265, 1)]
-        path_name = '../Data/Labeling/C/LNN_Train_data.xlsx'
+        path_name = '../Data/Labeling/C/ㄈLNN_Train_data.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         data = excel_data.loc[:, header].values

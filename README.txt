@@ -2,7 +2,7 @@
 # Step1, use the Preprocess/SplitExcel.py to remove the unreasonable data and get partial excel data
 # Step2, use the Preprocess/Build264Data.py to generate the 264 dimension data
 # Step3, use the Preprocess/BulidTrainData.py to generate the FNN　training data
-# Step4, use Main.py to predict the label by fnn, lnn, DNN
+# Step4, use Main.py to predict the label by fnn
 
 # Method 2
 # <---Important information--->
@@ -18,5 +18,12 @@
 # Step5, use the Preprocess/BulidTrainData.py to generate the FNN　training data
 # Step6, use the Preprocess/BulidTestData.py to generate the data for Testing the final model
 # Step7, use Main4.py to predict the label by fnn
+
+
+# Method 3
+# Step1, use the Preprocess/SplitExcel.py to remove the unreasonable data and get partial excel data
+# Step2, use the Preprocess/Build264Data.py to generate the 264 dimension data
+# Step3, use the Preprocess/BulidTrainData.py to generate the FNN　training data
+# Step4, use Main2.py to predict the label by fnn + DNN(Keras)
 
 

@@ -1,26 +1,35 @@
 """
-This script train the NN1, NN5, NN6 with Fuzzy Neural Networks
-And train the NN2, NN3, NN4 with Deep Neural Networks
+Method 3, FNN + DNN(Keras)
 """
 
+
 import os
+import sys
 import time
 import copy
 import datetime
 import numpy as np
+import pandas as pd
+
 
 from sklearn.manifold import LocallyLinearEmbedding
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, FactorAnalysis
+from sklearn.manifold import MDS
 from sklearn.manifold import Isomap
 from sklearn import preprocessing
 
 from Method.LoadData import LoadData
+from Method.Export import Export
+from Method.Normalize import Normalize
+from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 from Algorithm.FNN import FNN
-from Algorithm.Keras.DNN import DNN
+from Algorithm.LabelNN import LabelNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
+from MkGraph.ModelScatter import ModelScatter
+from MkGraph.ConfusionMatrix import ConfusionMatrix
 
 """
 # Fuzzy Neural Networks Structure
@@ -31,75 +40,24 @@ fnn_input_size = 3
 fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
-fnn_lr = 0.0001
-fnn_threshold = 0.0
+fnn_lr = 0.001
 fnn_epoch = 1
 fnn_random_size = 1
 
+fnn_threshold = 0.0
 
-"""
-# Label Neural Network Structure
-# Label NN Data Set are 6000
-"""
-lnn_input_size = 6
-lnn_hidden_size = 6
-lnn_output_size = 6
-lnn_lr = 0.0001
-lnn_epoch = 1
-lnn_random_size = 150
+fnn_threshold1 = 0.0
+fnn_threshold2 = 0.0
+fnn_threshold3 = 0.0
+fnn_threshold4 = 0.0
+fnn_threshold5 = 0.0
+fnn_threshold6 = 0.0
 
 """
 Dimension reduce algorithm
 """
-# dimension_reduce_algorithm = ['LLE', 'PCA', 'Isomap']
-dimension_reduce_algorithm = ['Isomap']
 
-
-# Create a storage to new picture
-def makedir(path, algorithm_name):
-    # Get the timestamp
-    now = datetime.datetime.now()
-    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    try:
-        os.mkdir(path + algorithm_name)
-        os.chdir(path + algorithm_name)
-    except FileExistsError:
-        os.chdir(path + algorithm_name)
-        print("<---FileExistsError(Main.py)--->")
-
-    # with open('README.txt', 'w', encoding='utf-8') as f:
-    #     f.writelines('timestamp ->' + timestamp)
-    #     f.writelines('algorithm_name' + algorithm_name)
-
-    # return os.getcwd()
-
-
-# Using the LLE(Locally Linear Embedding)
-# To reduce the dimension
-def reduce_dimension(data, algorithm_name):
-    dim = fnn_input_size
-    data_new = np.array([])
-
-    if algorithm_name == 'LLE' or 'lle':
-        # LLE
-        embedding = LocallyLinearEmbedding(n_components=dim, eigen_solver='dense')
-        data_new = embedding.fit_transform(data)
-
-    elif algorithm_name == 'PCA' or 'pca':
-        # PCA
-        pca = PCA(n_components=dim)
-        pca.fit(data)
-        data_new = pca.transform(data)
-
-    elif algorithm_name == 'Isomap' or 'isomap':
-        # Isomap
-        embedding = Isomap(n_components=dim)
-        data_new = embedding.fit_transform(data)
-    else:
-        print('None dimension reduced')
-
-    return data_new
+dimension_reduce_algorithm = ['tSNE']
 
 
 """
@@ -116,7 +74,7 @@ def train_local_fnn(nn, algorithm):
     nn_mean, nn_stddev, nn_weight = (0.0 for _ in range(3))
     accuracy = 0.0
     matrix = np.array([])
-    record_fnn = FNN()
+    fnn_copy = FNN()
     loss_list = np.array([])
 
     # This variable is used to store the all accuracy
@@ -124,25 +82,21 @@ def train_local_fnn(nn, algorithm):
 
     # Load file FNN_Train_data_' + str(num) + '.xlsx
     org_data, org_label = LoadData.get_method1_fnn_train(nn)
-    org_label = np.array([1 if element == nn else -1 for element in org_label])
-
+    org_label = np.array([1 if element == nn else 0 for element in org_label])
     # Reduce dimension and generate train/test data
-    reduced_data = reduce_dimension(org_data, algorithm)
-    # normalized_data = preprocessing.normalize(reduced_data)
+    # reduced_data = ra.tsne(org_data, fnn_input_size)
+    reduced_data = ra.pca(org_data, fnn_input_size)
+    # Normalized
+    normalized_data = Normalize.normalization(reduced_data)
 
-    min_max_scaler = preprocessing.MinMaxScaler()
-    normalized_data = min_max_scaler.fit_transform(org_data)
-
-    # reduced_data = normalization(reduced_data)
-
-    X_train, X_test, y_train, y_test = train_test_split(normalized_data, org_label, test_size=0.3)
+    X_train, X_test, y_train, y_test = train_test_split(
+        normalized_data, org_label, test_size=0.3)
     # print(X_train, X_train.shape)
     # print(y_train, y_train.shape)
 
     # Train the FNN
     print('<---Train the FNN' + str(nn) + ' Start--->')
     for i in range(fnn_random_size):
-
         # Random Generate the mean, standard deviation
         mean = np.array(
             [np.random.uniform(-1, 1) for _ in range(fnn_membership_size)])
@@ -150,7 +104,6 @@ def train_local_fnn(nn, algorithm):
             [np.random.uniform(0, 1) for _ in range(fnn_membership_size)])
         weight = np.array(
             [np.random.uniform(-1, 1) for _ in range(fnn_rule_size)])
-
         """
         # Generate FNN object to train
         # para1 -> fnn input layer size
@@ -168,8 +121,8 @@ def train_local_fnn(nn, algorithm):
 
         # Test the FNN model, save the one that has the best accuracy
         test_output = fnn.testing_model(X_test)
-        label_pred = np.array([1 if element >= fnn_threshold else 0 for element in test_output])
-
+        label_pred = np.array(
+            [1 if value > fnn_threshold else 0 for value in test_output])
         # print(y_test.shape)
         # print(label_pred.shape)
         # print(y_test)
@@ -178,143 +131,183 @@ def train_local_fnn(nn, algorithm):
         C_matrix = confusion_matrix(y_test, label_pred)
         C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
         all_nn_accuracy = np.append(all_nn_accuracy, C_accuracy)
-
-        # print(C_matrix)
-        # print(C_accuracy)
         if C_accuracy > accuracy:
             accuracy = copy.deepcopy(C_accuracy)
-            nn_mean = copy.deepcopy(fnn.mean)
-            nn_stddev = copy.deepcopy(fnn.stddev)
-            nn_weight = copy.deepcopy(fnn.weight)
+            fnn_copy = copy.deepcopy(fnn)
             matrix = copy.deepcopy(C_matrix)
-            record_fnn = copy.deepcopy(fnn)
             loss_list = copy.deepcopy(fnn.loss_list)
-
-        """
-        Every error trend graph will output
-        Output the Error Plot to observe trend
-        """
-        # rel_path = './Data/Graph/' + str(i) + '_FNN_' + str(nn) + '_error_trend.png'
-        # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-        # ErrorPlot.error_trend(
-        #     str(i) + '_FNN_' + str(nn) + '_error_trend', len(fnn.error_list), fnn.error_list, abs_path)
 
     print('<---Train the FNN' + str(nn) + ' Successfully--->')
     print('<----------------------------------------------->')
 
-    # print('1_目錄:', os.getcwd())
-
-    # First Time, you need to create a folder
-    if nn == 1:
-        org_path = '.\\Data\\Graph\\'
-        makedir(org_path, algorithm)
-    # else:
-    #     os.chdir('./Data/Graph/' + dimension_reduce_algorithm)
-    # print('2_目錄:', os.getcwd())
-
     # Choose the best FNN to Plot error trend
-    # rel_path = org_path + 'Best_FNN_' + str(nn) + '_error_trend.png'
+    print(os.getcwd())
+    abs_path = '/Users/yurenchen/PycharmProjects/Rider-Behavior/Experiment/method3/Grpah/Best_FNN_'+str(nn)+'_error_trend.png'
     # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    abs_path = os.getcwd() + '\\Best_FNN_' + str(nn) + '_error_trend.png'
-    # print('ErrorPlot', abs_path)
+    print(abs_path)
     ErrorPlot.error_trend(
-        'Best_FNN_' + str(nn) + '_error_trend', len(record_fnn.error_list), record_fnn.error_list, abs_path)
-
-    abs_path = os.getcwd() + '\\Best_FNN_' + str(nn) + '_loss_trend.png'
-    # Choose the best FNN to Plot loss on every epoch
-    ErrorPlot.loss_trend(
-        'Best_FNN_' + str(nn) + '_loss_trend', len(loss_list), loss_list, abs_path)
+        'Best_FNN_'+str(nn)+'_error_trend',
+         len(fnn_copy.error_list), fnn_copy.error_list, abs_path)
 
     # Choose the best Accuracy to Plot
-    # rel_path = org_path + 'Accuracy vs FNN' + str(nn) + '.png'
+    print(os.getcwd())
+    abs_path = '/Users/yurenchen/PycharmProjects/Rider-Behavior/Experiment/metdod3/Grpah/Accuracy vs FNN' + str(nn) + '.png'
     # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    abs_path = os.getcwd() + '\\Accuracy vs FNN' + str(nn) + '.png'
     # print('AccuracyPlot', abs_path)
     AccuracyPlot.build_accuracy_plot(
-        'Accuracy vs FNN'+str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
+        'Accuracy vs FNN' +
+        str(nn), np.array([i for i in range(1, len(all_nn_accuracy) + 1, 1)]),
         all_nn_accuracy, abs_path)
 
-    return nn_mean, nn_stddev, nn_weight, accuracy, matrix
+    return fnn_copy, accuracy, matrix
 
 
 """
-Train NN with DNN
+Test all model
 """
 
 
-def train_local_dnn(nn):
-    # Train the DNN
-    print('<---Train the DNN' + str(nn) + ' Start--->')
-    org_data, org_label = LoadData.get_method1_fnn_train(nn)
-    org_label = np.array([[1, 0] if element == nn else [0, 1] for element in org_label])
-    print(org_label)
+def test_all_model(fnn_attribute, lnn_attribute, algorithm):
+    # Load file, Original_data.xlsx
+    org_data, org_label = LoadData.get_method1_test()
 
-    # normalized_data = preprocessing.normalize(org_data)
+    # Reduce dimension and generate train/test data
+    reduced_data = reduce_dimension(org_data, org_label, algorithm)
+    # normalized_data = preprocessing.normalize(reduced_data)
+    # reduced_data = normalization(reduced_data)
 
-    min_max_scaler = preprocessing.MinMaxScaler()
-    data_scaled = min_max_scaler.fit_transform(org_data)
+    # min_max_scaler = preprocessing.MinMaxScaler()
+    # normalized_data = min_max_scaler.fit_transform(reduced_data)
 
-    # label need to convert by OneHotEncoding
-    X_train, X_test, y_train, y_test = train_test_split(data_scaled, org_label, test_size=0.3)
-    # y_train_onehot = np_utils.to_categorical(y_train)
-    # y_test_onehot = np_utils.to_categorical(y_test)
+    # normalized_data = preprocessing.scale(reduced_data)
 
-    # print("x_Train", X_train.shape)
-    # print("x_Train", X_train)
+    normalized_data = Normalize.normalization(reduced_data)
 
-    # print("y_Train", y_train_onehot.shape)
-    # print("y_Train", y_train_onehot)
+    X_train, X_test, y_train, y_test = train_test_split(
+        normalized_data, org_label, test_size=0.3)
 
-    # print("y_Train", y_train.shape)
-    # print("y_Train", y_train)
+    print('<---Test the Label NN Start--->')
 
-    # print("x_Test", X_test.shape)
-    # print("x_Test", X_test)
+    test_output_list = np.array([])
+    # 直接投票法，不用LNN
+    for test_data, test_label in zip(X_test, y_test):
+        lnn_input = get_fnn_output(test_data, fnn_attribute)
+        test_output_list = np.append(test_output_list, lnn_input)
 
-    # print("y_Test", y_test_onehot.shape)
-    # print("y_Test", y_test_onehot)
+    # lnn_input_list = np.array([])
+    # for test_data, test_label in zip(X_test, y_test):
+    #     lnn_input = get_fnn_output(test_data, fnn_attribute)
+    #     lnn_input_list = np.append(lnn_input_list, lnn_input)
+    # lnn_input_list = lnn_input_list.reshape(-1, 6)
+        # print('label_nn_test(Test)', lnn_input)
+    # 產生輸出後再正規化一次
+    # lnn_test_input_list = preprocessing.scale(lnn_input_list)
 
-    # print("y_Test", y_test.shape)
-    # print("y_Test", y_test)
+    # lnn_test_input_list = normalization(lnn_input_list)
 
-    DNN.dnn_train(nn, X_train, y_train, X_test, y_test)
-    print('<---Train the DNN' + str(nn) + ' Successfully--->')
+    # test_output_list = np.array([])
+    # for train_data, train_label in zip(X_train, y_train):
+    #     lnn_input = get_fnn_output(train_data, fnn_attribute)
+    #     # print('lnn_input(Test ALL)', lnn_input)
+    #
+    #     weight1 = lnn_attribute['Weight1']
+    #     weight2 = lnn_attribute['Weight2']
+    #     bias = lnn_attribute['Bias']
+    #
+    #     lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+    #     test_output = lnn.forward(lnn_input)
+    #     test_output_list = np.append(test_output_list, test_output)
+    #
+    #
+    #     # # 直接投票法，不用LNN
+    #     # lnn_input = get_fnn_output(train_data, fnn_attribute)
+    #     # test_output_list = np.append(test_output_list, lnn_input)
+
+    final_output_list = np.array([])
+
+    # weight1 = lnn_attribute['Weight1']
+    # weight2 = lnn_attribute['Weight2']
+    # bias = lnn_attribute['Bias']
+
+    # lnn = LabelNN(lnn_input_size, lnn_hidden_size, lnn_output_size, weight1, weight2, bias, lnn_lr)
+
+    # lnn_test_input_list = lnn_input_list.reshape(-1, 6)
+    # final_output_list = lnn.forward(lnn_test_input_list)
+    # final_output_list = final_output_list.reshape(-1, 6)
+
+    test_output_list = test_output_list.reshape(-1, 6)
+    label_pred = LabelNN.label_encode(test_output_list)
+    for x, y in zip(test_output_list, y_test):
+        print(x, ' ', y)
+
+    # normalized_output = min_max_scaler.fit_transform(test_output_list)
+    # print('normalized_output', normalized_output)
+    # label_pred = LabelNN.label_encode(normalized_output)
+
+    C_matrix = confusion_matrix(y_test, label_pred)
+    C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
+
+    print('This is the confusion matrix(test_all_model)\n', C_matrix)
+    # print(C_matrix)
+    # print(C_accuracy)
+
+    print('<---Test the Label NN Successfully--->')
     print('<----------------------------------------------->')
+    return C_accuracy
+
+
+"""
+Show the Model, Visulation
+Descibe the model
+
+"""
+
+
+def show_model(mean, stddev, weight):
+    data = np.array([])
+    output = np.array([])
+    for i in range(-10, 10, 1):
+        for j in range(-10, 10, 1):
+            for k in range(-10, 10, 1):
+                tmp = np.append(data, np.array([i, j, k]))
+    data = data.reshape(1, -1, 3) / 10
+    fnn = FNN(
+        fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size,
+        mean, stddev, weight, fnn_lr, 1)
+
+    for element in data:
+        output = np.append(output, fnn.forward(element))
+    ModelScatter.output_scatter_3d(data, output, fnn_threshold1)
 
 
 if __name__ == '__main__':
 
+    # 目前的降維度法是 tSNE
     for algorithm in dimension_reduce_algorithm:
         start = time.time()
+        print('<---Train', algorithm, '--->')
+
         # Store those values to describe the best model in fnn local training
-        fnn_mean, fnn_stddev, fnn_weight, fnn_accuracy, fnn_matrix =\
-            ([] for _ in range(5))
-        """
-        Start to train FNN (Fuzzy Neural Networks)
-        We will train six FNN (FNN1 ~ FNN6)
-        para1 -> mean, 
-        para2 -> standard deviation
-        para3 -> weight, 
-        para4 -> accuracy
-        para5 -> confusion matrix
-        """
+        fnn_model, fnn_accuracy, fnn_matrix = ([] for _ in range(3))
         pd_header = ['T', 'F']
         for nn in range(1, fnn_label_size + 1, 1):
-            # If nn == 2, 3, 4
-            # We use DNN to train
-            if 2 <= nn <= 4:
-                train_local_dnn(nn)
-                continue
+            fnn, accuracy, matrix = train_local_fnn(nn, algorithm)
+            fnn_model.append(fnn)
+            # 儲存 fnn model as .json
+            rel_path = '../Experiment/method3/Model/FNN/'
+            abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+            Export.save_fnn_weight(nn, fnn, abs_path)
+            fnn_accuracy.append(accuracy)
+            fnn_matrix.append(pd.DataFrame(matrix, columns=pd_header, index=pd_header))
+        
+        for i in range(len(fnn_matrix)):
+            rel_path = '../Experiment/method3/Graph/cnf'+str(i)+'.png'
+            abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+            ConfusionMatrix.plot_confusion_matrix(
+                fnn_matrix[i], abs_path, classes=[0,1], title='C'+str(i)+' Cnf')
+        
 
-            else:
-                continue
-                p1, p2, p3, p4, p5 = train_local_fnn(nn, algorithm)
-                fnn_mean.append(p1)
-                fnn_stddev.append(p2)
-                fnn_weight.append(p3)
-                fnn_accuracy.append(p4)
-                fnn_matrix.append(pd.DataFrame(p5, columns=pd_header, index=pd_header))
 
-        print('fnn_mean', fnn_mean)
-        print('fnn_stddev', fnn_stddev)
-        print('fnn_weight', fnn_weight)
+        end = time.time()
+
+        print('All cost time is (' + str(end-start) + ')')
