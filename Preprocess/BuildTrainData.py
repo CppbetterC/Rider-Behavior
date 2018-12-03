@@ -85,7 +85,7 @@ def build_from_original(org_data, nn_label):
 def build_from_refactor(org_data, nn_label, nn_category):
     # {'C1': 9, 'C2': 5, 'C3': 4, 'C4': 5, 'C5': 5, 'C6': 4}
     # 注意比例
-    big_num, small_num = 1000, 30
+    big_num, small_num = 1500, 160
     header = ['Dim' + str(i) for i in range(1, 4, 1)]
     tmp = org_data.loc[org_data['Label'] == nn_label, header].values.astype('float64')
     if len(tmp) < big_num:
@@ -134,7 +134,7 @@ if method == '1':
     print(org_data)
     for nn in range(1, 7, 1):
         data = build_from_original(org_data, nn)
-        path_name = '../Data/Labeling/C/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+        path_name = '../Data/Labeling/C/method1/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
         data.to_excel(writer, sheet_name='Labeling_Data', index=False)
@@ -157,7 +157,7 @@ if method == '1':
     result = pd.concat([pd_data, pd_label], axis=1)
     print(result)
 
-    path_name = '../Data/Labeling/C/LNN_Train_data.xlsx'
+    path_name = '../Data/Labeling/C/method1/LNN_Train_data.xlsx'
     path_name = os.path.join(os.path.dirname(__file__), path_name)
     writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
     result.to_excel(writer, sheet_name='Labeling_Data', index=False)
@@ -166,8 +166,8 @@ if method == '1':
 elif method == '2':
     dim = 3
     all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-    cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
-
+    # cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+    cluster_num = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
     header = ['Dim1', 'Dim2', 'Dim3', 'Label']
     pd_data = pd.DataFrame()
     np_data = np.array([])
@@ -201,7 +201,8 @@ elif method == '2':
     for nn in nn_category:
         print('nn is', nn)
         data = build_from_refactor(pd_data, nn, nn_category)
-        path_name = '../Data/Labeling/C/method2/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+        # path_name = '../Data/Labeling/C/method2/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
+        path_name = '../Data/Labeling/C/' + 'FNN_Train_data_' + str(nn) + '.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         writer = pd.ExcelWriter(path_name, engine='xlsxwriter')
         data.to_excel(writer, sheet_name='Labeling_Data', index=False)

@@ -41,8 +41,8 @@ fnn_membership_size = fnn_input_size * fnn_label_size
 fnn_rule_size = 6
 fnn_output_size = 1
 fnn_lr = 0.001
-fnn_epoch = 1
-fnn_random_size = 1
+fnn_epoch = 4
+fnn_random_size = 100
 
 fnn_threshold = 0.0
 
@@ -55,31 +55,12 @@ fnn_threshold6 = 0.0
 
 """Dimension reduce algorithm"""
 dimension_reduce_algorithm = ['tSNE']
-def train_local_fnn(nn, algorithm):
-
+def train_local_fnn(algorithm, X_train, X_test, y_train, y_test):
     accuracy = 0.0
     matrix = np.array([])
     fnn_copy = FNN()
-
     # This variable is used to store the all accuracy
     all_nn_accuracy = np.array([])
-
-    # Load file FNN_Train_data_' + str(num) + '.xlsx
-    org_data, org_label = LoadData.get_method1_fnn_train(nn)
-    org_label = np.array([1 if element == nn else 0 for element in org_label])
-    # Reduce dimension and generate train/test data
-    # reduced_data = ra.tsne(org_data, fnn_input_size)
-    reduced_data = ra.pca(org_data, fnn_input_size)
-    # Normalized
-    normalized_data = Normalize.normalization(reduced_data)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        normalized_data, org_label, test_size=0.3)
-    # print(X_train, X_train.shape)
-    # print(y_train, y_train.shape)
-
-    # Train the FNN
-    print('<---Train the FNN' + str(nn) + ' Start--->')
     for i in range(fnn_random_size):
         # Random Generate the mean, standard deviation
         mean = np.array(
@@ -97,10 +78,6 @@ def train_local_fnn(nn, algorithm):
         # Test the FNN model, save the one that has the best accuracy
         test_output = fnn.testing_model(X_test)
         label_pred = np.array([1 if value > fnn_threshold else 0 for value in test_output])
-        # print(y_test.shape)
-        # print(label_pred.shape)
-        # print(y_test)
-        # print(label_pred)
 
         C_matrix = confusion_matrix(y_test, label_pred)
         C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
@@ -109,9 +86,6 @@ def train_local_fnn(nn, algorithm):
             accuracy = copy.deepcopy(C_accuracy)
             fnn_copy = copy.deepcopy(fnn)
             matrix = copy.deepcopy(C_matrix)
-
-    print('<---Train the FNN' + str(nn) + ' Successfully--->')
-    print('<----------------------------------------------->')
 
     # Choose the best FNN to Plot error trend
     # rel_path = './Experiment/Method3/Graph/Best_FNN_'+str(nn)+'_error_trend.png'
@@ -138,12 +112,79 @@ def show_train_history(train_history, train, validation, file_name):
     plt.legend(['train', 'validation'], loc='upper left')
     plt.savefig(file_name)
     plt.show()
-def train_keras_lnn(nn_category, org_data, org_label, algorithm):
+
+
+def label_convert(data):
+    result = np.array([])
+    for element in data:
+        if element == 'C1':
+            result = np.append(result, 0)
+        elif element == 'C2_0':
+            result = np.append(result, 1)
+        elif element == 'C2_1':
+            result = np.append(result, 2)
+        elif element == 'C3_0':
+            result = np.append(result, 3)
+        elif element == 'C3_1':
+            result = np.append(result, 4)
+        elif element == 'C4_0':
+            result = np.append(result, 5)
+        elif element == 'C4_1':
+            result = np.append(result, 6)
+        elif element == 'C5':
+            result = np.append(result, 7)
+        elif element == 'C6':
+            result = np.append(result, 8)
+        else:
+            print('Error 139')
+    return result
+
+
+def prediction_convert(data):
+    result = np.array([])
+    for num in data:
+        if num < 1:
+            result = np.append(result, 0)
+        elif 1 <= num < 3:
+            result = np.append(result, 1)
+        elif 3 <= num < 5:
+            result = np.append(result, 2)
+        elif 5 <= num < 7:
+            result = np.append(result, 3)
+        elif num == 7:
+            result = np.append(result, 4)
+        elif num == 8:
+            result = np.append(result, 5)
+        else:
+            print('Error 159')
+    return result
+
+def onehot_convert(data):
+    result = np.array([])
+    for element in data:
+        num = np.argmax(element)
+        if num < 1:
+            result = np.append(result, 0)
+        elif 1 <= num < 3:
+            result = np.append(result, 1)
+        elif 3 <= num < 5:
+            result = np.append(result, 2)
+        elif 5 <= num < 7:
+            result = np.append(result, 3)
+        elif num == 7:
+            result = np.append(result, 4)
+        elif num == 8:
+            result = np.append(result, 5)
+        else:
+            print('Error 179')
+    return result
+
+def train_keras_lnn(nn_array, org_data, org_label, algorithm):
     """Get the fnn output and input the lnn"""
     fnn_output = np.array([])
-    for nn in nn_category:
-        print('<---nn -> ', nn, '--->')
-        rel_path = './Experiment/Method3/FNNModel/'+str(nn)+'.json'
+    for name in nn_array:
+        print('<---nn -> ', name, '--->')
+        rel_path = './Experiment/Method3/FNNModel/'+name+'.json'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         attribute = LoadData.load_fnn_weight(abs_path)
         mean = np.asarray(attribute['Mean'])
@@ -154,19 +195,24 @@ def train_keras_lnn(nn_category, org_data, org_label, algorithm):
             fnn_input_size, fnn_membership_size, fnn_rule_size, fnn_output_size, mean, stddev, weight, fnn_lr, 1)
         result = fnn.testing_model(org_data)
         fnn_output = np.append(fnn_output, result)
-    fnn_output = fnn_output.reshape(len(nn_category), -1).T
 
-    fnn_label = np.array([value-1 for value in org_label])
+    fnn_output = fnn_output.reshape(len(nn_array), -1).T
+
+    # fnn_label = np.array([int(e[1:2])-1 for e in org_label])
+    print('org_label', org_label)
+    fnn_label = label_convert(org_label)
     X_train, X_test, y_train, y_test = train_test_split(fnn_output, fnn_label, test_size=0.3, random_state=42)
+    print('X_train.shape', X_train.shape)
+    print('y_train.shape', y_train.shape)
 
     # Construct the lnn
     y_trainOneHot = np_utils.to_categorical(y_train)
     y_testOneHot = np_utils.to_categorical(y_test)
 
     model = Sequential()
-    model.add(Dense(units=6, input_dim=6))
-    model.add(Dense(6, activation='tanh'))
-    model.add(Dense(units=6, kernel_initializer='normal', activation='softmax'))
+    model.add(Dense(units=16, input_dim=9))
+    model.add(Dense(16, activation='tanh'))
+    model.add(Dense(units=9, kernel_initializer='normal', activation='softmax'))
     adam = optimizers.Adam(lr=0.001)
     model.compile(loss='mean_squared_error', optimizer=adam, metrics=['mse'])
     model.summary()
@@ -183,13 +229,19 @@ def train_keras_lnn(nn_category, org_data, org_label, algorithm):
         print(x, ' ', y)
 
     prediction = model.predict_classes(X_test)
-    cnf_matrix = confusion_matrix(y_test, prediction)
-    print('accuracy_score', accuracy_score(y_test, prediction))
+    y_pred = prediction_convert(prediction)
+    yy = onehot_convert(y_testOneHot)
+
+    print(set(y_pred))
+    print(set(yy))
+
+    cnf_matrix = confusion_matrix(yy, y_pred)
+    print('accuracy_score', accuracy_score(yy, y_pred))
     print('cnf_matrix\n', cnf_matrix)
-    rel_path = './Experiment/method3/Graph/cnf_lnn.png'
-    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    ConfusionMatrix.plot_confusion_matrix(cnf_matrix, abs_path,
-                                         classes=list(set(y_test)), title='Final Model Confusion matrix')
+    # rel_path = './Experiment/method3/Graph/cnf_lnn.png'
+    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    # ConfusionMatrix.plot_confusion_matrix(cnf_matrix, abs_path,
+    #                                      classes=list(set(y_test)), title='Final Model Confusion matrix')
     # 模型存起來
     # path_name = 'FinalModel.h5'
     # model.save(path_name)
@@ -199,32 +251,53 @@ if __name__ == '__main__':
     for algorithm in dimension_reduce_algorithm:
         start = time.time()
 
-        print('<---Part1, Train FNN(C1-C6)--->')
-        # Store those values to describe the best model in fnn local training
-        fnn_model, fnn_accuracy, fnn_matrix = ([] for _ in range(3))
-        for nn in range(1, fnn_label_size + 1, 1):
-            fnn, accuracy, matrix = train_local_fnn(nn, algorithm)
-            fnn_model.append(fnn)
-            # 儲存 fnn model as .json
-            rel_path = './Experiment/Method3/FNNModel/'
-            abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-            Export.save_fnn_weight(nn, fnn, abs_path)
-            fnn_accuracy.append(accuracy)
-            fnn_matrix.append(matrix)
-        
-        #for i in range(len(fnn_matrix)):
-            #rel_path = './Experiment/method3/Graph/cnf'+str(i)+'.png'
-           # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-            #ConfusionMatrix.plot_confusion_matrix(
-               # fnn_matrix[i], abs_path, classes=[0,1], title='C'+str(i)+' Cnf')
+        fnn_accuracy, fnn_matrix = ([] for _ in range(2))
+        nn_category = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
 
+        print('<---Part1, Train FNN(C1-C6)--->')
+
+        for key, value in nn_category.items():
+            number = 1 if value == 0 else value
+            print(key,' ', value, ' ', number)
+            for num in range(number):
+                if value == 0:
+                    name = str(key)
+                else:
+                    name = str(key)+'_'+str(num)
+                print('<---name is ', name, '--->')
+                print('<---Train the FNN' + name + ' Start--->')
+                org_data, org_label = LoadData.get_method3_fnn_train(name)
+                org_label = np.array([1 if element == name else 0 for element in org_label])
+                X_train, X_test, y_train, y_test = train_test_split(org_data, org_label, test_size=0.3)
+                fnn, accuracy, matrix = train_local_fnn(algorithm, X_train, X_test, y_train, y_test)
+
+                rel_path = './Experiment/Method3/FNNModel/'
+                abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+                Export.save_fnn_weight(name, fnn, abs_path)
+
+                fnn_accuracy.append(accuracy)
+                fnn_matrix.append(matrix)
+
+                print('<---Train the FNN' + name + ' Successfully--->')
+                print('<----------------------------------------------->')
+
+        print('fnn_matrix', fnn_matrix)
+        print('fnn_accuracy', fnn_accuracy)
+            #for i in range(len(fnn_matrix)):
+                #rel_path = './Experiment/method3/Graph/cnf'+str(i)+'.png'
+               # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+                #ConfusionMatrix.plot_confusion_matrix(
+                   # fnn_matrix[i], abs_path, classes=[0,1], title='C'+str(i)+' Cnf')
 
         print('<---Part2, Keras Networks(LNN)--->')
-        org_data, org_label = LoadData.get_lnn_training_data()
-        reduced_data = ra.pca(org_data, fnn_input_size)
-        normalized_data = Normalize.normalization(reduced_data)
-        nn_category = [i for i in range(1, 7, 1)]
-        train_keras_lnn(nn_category, normalized_data, org_label, algorithm)
+        # org_data, org_label = LoadData.get_lnn_training_data()
+        org_data, org_label = LoadData.get_method3_test()
+        # reduced_data = ra.pca(org_data, fnn_input_size)
+        # normalized_data = Normalize.normalization(reduced_data)
+        # nn_category = [i for i in range(1, 7, 1)]
+
+        nn_array = ['C1', 'C2_0', 'C2_1', 'C3_0', 'C3_1', 'C4_0', 'C4_1', 'C5', 'C6']
+        train_keras_lnn(nn_array, org_data, org_label, algorithm)
 
         end = time.time()
         print('All cost time is (' + str(end-start) + ')')

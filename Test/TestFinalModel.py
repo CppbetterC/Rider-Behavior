@@ -35,7 +35,11 @@ fnn_lr = 0.001
 fnn_epoch = 1
 fnn_random_size = 1
 
-fnn_threshold = 0.0
+fnn_threshold = [0.2, 0.0, 0.1, 0.1, 0.2, 0.2,
+                 0.1, 0.1, 0.1, 0.1, 0.0, 0.2,
+                 0.1, 0.1, 0.0, 0.2, 0.0, 0.1,
+                 0.1, 0.2, 0.1, 0.0, 0.2, 0.2,
+                 0.2, 0.1, 0.2, 0.2, 0.1, 0.1]
 
 
 # Load the Test data
@@ -48,7 +52,7 @@ output_array = np.array([])
 # Load the test data, forward, store
 for nn in nn_category:
     print('nn -> ', nn)
-    rel_path = '../Experiment/Model/FNN/' + str(nn) + '.json'
+    rel_path = '../Experiment/Method2/FNNModel/FNN/'+str(nn)+'.json'
     abs_path = os.path.join(os.path.dirname(__file__), rel_path)
     attribute = LoadData.load_fnn_weight(abs_path)
     # print(attribute)
@@ -76,8 +80,13 @@ for array in output_array:
     # print('array', array)
     # print(array.shape)
 
-    tmp = np.argwhere(array > fnn_threshold).ravel()
+    # tmp = np.argwhere(array > fnn_threshold).ravel()
     # print('tmp', tmp)
+    tmp = np.array([])
+    for i in range(len(array)):
+        if array[i] > fnn_threshold[i]:
+            tmp = np.append(tmp, i)
+    print('tmp', tmp)
 
     if len(tmp) == 1:
         count[0] += 1
@@ -90,10 +99,10 @@ for array in output_array:
         # print('key', key, type(key))
         tt = key[0]
         molecule[tt - 1] += 1
-    # print('molecule', molecule)
+    print('molecule', molecule)
 
     vector = molecule / denominator
-    # print('vector', vector)
+    print('vector', vector)
 
     idx = vector.argmax()+1
     # print('idx', idx)
@@ -103,7 +112,7 @@ for array in output_array:
 
 # 全部訓練資料的 confusion matrix
 # Hot map
-rel_path = '../Experiment/Graph/test/CM_FinalModel.png'
+rel_path = '../Experiment/Method2/test/CM_FinalModel.png'
 abs_path = os.path.join(os.path.dirname(__file__), rel_path)
 y_test = [int(label[1:2]) for label in org_label]
 # print(y_test)
@@ -131,7 +140,7 @@ print('len(correct_input)', len(correct_input))
 print('len(error_input)', len(error_input))
 
 # Scatter
-rel_path = '../Experiment/Graph/test/Scatter Final Model.png'
+rel_path = '../Experiment/Method2/test/Scatter Final Model.png'
 abs_path = os.path.join(os.path.dirname(__file__), rel_path)
 correct_data = correct_input.T
 error_data = error_input.T
@@ -154,7 +163,7 @@ plt.pause(3)
 plt.close()
 
 # Bar
-rel_path = '../Experiment/Graph/test/Bar Final Model.png'
+rel_path = '../Experiment/Method2/test/Bar Final Model.png'
 abs_path = os.path.join(os.path.dirname(__file__), rel_path)
 # x_axis = ['Correct data length', 'Error data length']
 # y_axis = [len(correct_input), len(error_input)]

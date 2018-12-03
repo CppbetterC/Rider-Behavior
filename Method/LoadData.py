@@ -125,6 +125,16 @@ class LoadData:
         return data, labels
 
     @staticmethod
+    def get_method3_test():
+        header = ['Dim' + str(i) for i in range(1, 4, 1)]
+        path_name = '../Data/Labeling/C/method3/Test_data.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        data = excel_data.loc[:, header].values
+        labels = excel_data.loc[:, ['Label']].values.ravel()
+        return data, labels
+
+    @staticmethod
     def get_method1_fnn_train(num):
         """
         Read the FNN_Train_data as np_data.
@@ -144,6 +154,16 @@ class LoadData:
     def get_method2_fnn_train(num):
         header = ['Dim' + str(i) for i in range(1, 4, 1)]
         path_name = '../Data/Labeling/C/method2/FNN_Train_data_' + num + '.xlsx'
+        path_name = os.path.join(os.path.dirname(__file__), path_name)
+        excel_data = pd.read_excel(path_name)
+        data = excel_data.loc[:, header].values
+        labels = excel_data.loc[:, ['Label']].values.ravel()
+        return data, labels
+
+    @staticmethod
+    def get_method3_fnn_train(num):
+        header = ['Dim' + str(i) for i in range(1, 4, 1)]
+        path_name = '../Data/Labeling/C/method3/FNN_Train_data_'+num+'.xlsx'
         path_name = os.path.join(os.path.dirname(__file__), path_name)
         excel_data = pd.read_excel(path_name)
         data = excel_data.loc[:, header].values

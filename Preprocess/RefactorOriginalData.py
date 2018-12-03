@@ -26,7 +26,8 @@ from Method.ReducedAlgorithm import ReducedAlgorithm as ra
 
 # Dimension Reduced algorithm is tSNE
 # 這邊可以調整C1~C6每個要再細分成幾類
-cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+# cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+cluster_num = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
 dim = 3
 
 
@@ -75,7 +76,8 @@ for key, values in cluster_num.items():
         # print(result)
 
         # Output the result to excel
-        rel_path = '..\\Data\\Labeling\\C\\method2\\'+key+'_'+str(i)+'_Refactor_data.xlsx'
+        # rel_path = '..\\Data\\Labeling\\C\\method2\\'+key+'_'+str(i)+'_Refactor_data.xlsx'
+        rel_path = '..\\Data\\Labeling\\C\\method3\\'+key+'_'+str(i)+'_Refactor_data.xlsx'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         writer = pd.ExcelWriter(abs_path, engine='xlsxwriter')
         result.to_excel(writer, sheet_name='Labeling_Data', index=False)
