@@ -15,7 +15,8 @@ from MkGraph.ConfusionMatrix import ConfusionMatrix
 from Algorithm.FNN import FNN
 
 all_label = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6']
-cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+# cluster_num = {'C1': 6, 'C2': 5, 'C3': 5, 'C4': 5, 'C5': 5, 'C6': 4}
+cluster_num = {'C1': 2, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 2, 'C6': 2}
 nn_category = np.array([])
 for element in all_label:
     if cluster_num[element] == 0:
@@ -45,7 +46,7 @@ if method == "1":
     for nn in nn_category:
         print('nn ->', nn)
         # Load the json
-        rel_path = '../Experiment/Method2/FNNModel/FNN/'+str(nn)+'.json'
+        rel_path = '../Experiment/Method3/FNNModel/FNN/'+str(nn)+'.json'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         attribute = LoadData.load_fnn_weight(abs_path)
         # print(attribute)
@@ -66,7 +67,7 @@ if method == "1":
 
         # 全部訓練資料的 confusion matrix
         # Hot map
-        rel_path = '../Experiment/Method2/test/CM/CM'+str(nn)+'.png'
+        rel_path = '../Experiment/Method3/test/CM/CM'+str(nn)+'.png'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         y_test = [1 if label == nn else 0 for label in org_label]
         y_pred = [1 if value > fnn_threshold else 0 for value in output]
@@ -96,7 +97,7 @@ if method == "1":
         # print('len(error_input)', len(error_input))
 
         # Scatter
-        rel_path = '../Experiment/Method2/test/Scatter/Scatter'+str(nn)+'.png'
+        rel_path = '../Experiment/Method3/test/Scatter/Scatter'+str(nn)+'.png'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         correct_data = correct_input.T
         error_data = error_input.T
@@ -119,7 +120,7 @@ if method == "1":
         plt.close()
 
         # Bar
-        rel_path = '../Experiment/Method2/test/Bar/Bar'+str(nn)+'.png'
+        rel_path = '../Experiment/Method3/test/Bar/Bar'+str(nn)+'.png'
         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
         x_axis = ['Correct data length', 'Error data length']
         y_axis = [len(correct_input), len(error_input)]
