@@ -27,3 +27,7 @@
 # Step4, use Main2.py to predict the label by fnn + DNN(Keras)
 
 
+# Keras Deep Neural Networks
+# The script is in the Algorithm/Keras/Main.py
+
+

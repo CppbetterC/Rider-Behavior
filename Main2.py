@@ -224,8 +224,8 @@ def train_keras_lnn(nn_array, org_data, org_label, algorithm):
     model.summary()
 
     train_history = model.fit(x=X_train, y=y_trainOneHot, validation_split=0.2, epochs=30, batch_size=200, verbose=2)
-    #show_train_history(train_history, 'mean_squared_error', 'val_mean_squared_error', 'mean_squared_error.png')
-    #show_train_history(train_history, 'loss', 'val_loss', 'loss.png')
+    show_train_history(train_history, 'mean_squared_error', 'val_mean_squared_error', 'mean_squared_error.png')
+    show_train_history(train_history, 'loss', 'val_loss', 'loss.png')
 
     scores = model.evaluate(X_test, y_testOneHot)
     print('scores', scores)
@@ -244,10 +244,11 @@ def train_keras_lnn(nn_array, org_data, org_label, algorithm):
     cnf_matrix = confusion_matrix(yy, y_pred)
     print('accuracy_score', accuracy_score(yy, y_pred))
     print('cnf_matrix\n', cnf_matrix)
-    # rel_path = './Experiment/method3/Graph/cnf_lnn.png'
-    # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-    # ConfusionMatrix.plot_confusion_matrix(cnf_matrix, abs_path,
-    #                                      classes=list(set(y_test)), title='Final Model Confusion matrix')
+    rel_path = './Experiment/method3/Graph/cnf_lnn.png'
+    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    plt.figure(figsize=(8, 6), dpi=200)
+    ConfusionMatrix.plot_confusion_matrix(cnf_matrix, abs_path,
+     classes=list(set(y_pred)), title='Final Model Confusion matrix')
     # 模型存起來
     # path_name = 'FinalModel.h5'
     # model.save(path_name)
@@ -257,38 +258,38 @@ if __name__ == '__main__':
     for algorithm in dimension_reduce_algorithm:
         start = time.time()
 
-        fnn_accuracy, fnn_matrix = ([] for _ in range(2))
-        # nn_category = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
-        nn_category = {'C1': 2, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 2, 'C6': 2}
-        print('<---Part1, Train FNN(C1-C6)--->')
+        # fnn_accuracy, fnn_matrix = ([] for _ in range(2))
+        # # nn_category = {'C1': 0, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 0, 'C6': 0}
+        # nn_category = {'C1': 2, 'C2': 2, 'C3': 2, 'C4': 2, 'C5': 2, 'C6': 2}
+        # print('<---Part1, Train FNN(C1-C6)--->')
 
-        for key, value in nn_category.items():
-            number = 1 if value == 0 else value
-            for num in range(number):
-                print(key, ' ', num, ' ', number)
-                if value == 0:
-                    name = str(key)
-                else:
-                    name = str(key)+'_'+str(num)
-                print('<---name is ', name, '--->')
-                print('<---Train the FNN' + name + ' Start--->')
-                org_data, org_label = LoadData.get_method3_fnn_train(name)
-                org_label = np.array([1 if element == name else 0 for element in org_label])
-                X_train, X_test, y_train, y_test = train_test_split(org_data, org_label, test_size=0.3)
-                fnn, accuracy, matrix = train_local_fnn(algorithm, X_train, X_test, y_train, y_test)
+        # for key, value in nn_category.items():
+        #     number = 1 if value == 0 else value
+        #     for num in range(number):
+        #         print(key, ' ', num, ' ', number)
+        #         if value == 0:
+        #             name = str(key)
+        #         else:
+        #             name = str(key)+'_'+str(num)
+        #         print('<---name is ', name, '--->')
+        #         print('<---Train the FNN' + name + ' Start--->')
+        #         org_data, org_label = LoadData.get_method3_fnn_train(name)
+        #         org_label = np.array([1 if element == name else 0 for element in org_label])
+        #         X_train, X_test, y_train, y_test = train_test_split(org_data, org_label, test_size=0.3)
+        #         fnn, accuracy, matrix = train_local_fnn(algorithm, X_train, X_test, y_train, y_test)
 
-                rel_path = './Experiment/Method3/FNNModel/'
-                abs_path = os.path.join(os.path.dirname(__file__), rel_path)
-                Export.save_fnn_weight(name, fnn, abs_path)
+        #         rel_path = './Experiment/Method3/FNNModel/'
+        #         abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+        #         Export.save_fnn_weight(name, fnn, abs_path)
 
-                fnn_accuracy.append(accuracy)
-                fnn_matrix.append(matrix)
+        #         fnn_accuracy.append(accuracy)
+        #         fnn_matrix.append(matrix)
 
-                print('<---Train the FNN' + name + ' Successfully--->')
-                print('<----------------------------------------------->')
+        #         print('<---Train the FNN' + name + ' Successfully--->')
+        #         print('<----------------------------------------------->')
 
-        print('fnn_matrix', fnn_matrix)
-        print('fnn_accuracy', fnn_accuracy)
+        # print('fnn_matrix', fnn_matrix)
+        # print('fnn_accuracy', fnn_accuracy)
             #for i in range(len(fnn_matrix)):
                 #rel_path = './Experiment/method3/Graph/cnf'+str(i)+'.png'
                # abs_path = os.path.join(os.path.dirname(__file__), rel_path)
