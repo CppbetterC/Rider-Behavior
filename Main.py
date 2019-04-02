@@ -22,6 +22,7 @@ from Algorithm.LabelNN import LabelNN
 from MkGraph.AccuracyPlot import AccuracyPlot
 from MkGraph.ErrorPlot import ErrorPlot
 from MkGraph.ModelScatter import ModelScatter
+from MkGraph.ConfusionMatrix import ConfusionMatrix
 
 """
 # Fuzzy Neural Networks Structure
@@ -564,7 +565,12 @@ def test_all_model(fnn_attribute, lnn_attribute, algorithm):
     # label_pred = LabelNN.label_encode(normalized_output)
 
     C_matrix = confusion_matrix(y_test, label_pred)
+    rel_path = './Experiment/Method1/cnf_matrix_fnn(1-6).png'
+    abs_path = os.path.join(os.path.dirname(__file__), rel_path)
+    ConfusionMatrix.plot_confusion_matrix(
+        C_matrix, abs_path, classes=list(set(y_test)), title='Confusion matrix')
     C_accuracy = np.sum(C_matrix.diagonal()) / np.sum(C_matrix)
+
 
     print('This is the confusion matrix(test_all_model)\n', C_matrix)
     # print(C_matrix)
