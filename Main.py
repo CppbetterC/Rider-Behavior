@@ -687,7 +687,3 @@ if __name__ == '__main__':
         end = time.time()
 
         print('All cost time is (' + str(end-start) + ')')
-
-# 2018/11/18
-# 用最簡單的DNN去辨識 FNN, FNN3, FNN4 無法做到的事情
-#
